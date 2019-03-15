@@ -1,5 +1,5 @@
 import pandas as pd
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
 import nltk
@@ -20,7 +20,7 @@ from sklearn.metrics import confusion_matrix
 
 if __name__ == "__main__":
 
-    df = pd.read_csv('C:\insight_program\\abstracts\TrainingData.csv')
+    df = pd.read_csv('TrainingData.csv')
     df.head()
 
     #add number of tags column
@@ -55,6 +55,7 @@ if __name__ == "__main__":
     df['number_of_categories'] = df['main_categories'].apply(len)
 
     max_tags = df['number_of_categories'].max()
+    print(max_tags)
 
     #how many abstracts with 1,2,3... tags
     abs_no_categ = [len(df[df['number_of_categories'] == x+1]) for x in range(max_tags)]
@@ -66,7 +67,7 @@ if __name__ == "__main__":
         allCategories = list(set(allCategories))
 
     #works, but there must be a better way! (very slow!!!)
-    new_df = pd.DataFrame(columns = allCategories)
+    '''new_df = pd.DataFrame(columns = allCategories)
     for cat in allCategories:
         print(cat)
         for idx in range(len(df.main_categories)):
@@ -74,11 +75,12 @@ if __name__ == "__main__":
             if cat in df['main_categories'][idx]:
                 new_df.loc[idx,cat] = 1
             else:
-                new_df.loc[idx, cat] = 0
+                new_df.loc[idx, cat] = 0'''
 
-    #new_df.to_csv('C:\insight_program\\abstracts\OutputData_OneHotEncoded.csv')
-    new_df = pd.read_csv('C:\insight_program\\abstracts\OutputData_OneHotEncoded.csv')
+    #new_df.to_csv('OutputData_OneHotEncoded.csv')
+    new_df = pd.read_csv('OutputData_OneHotEncoded.csv')
 
+    print("processing abstract text")
     #ABSTRACT TEXT PROCESSING
     stopWordList = stopwords.words('english')
 
@@ -129,7 +131,7 @@ if __name__ == "__main__":
     #frequency of the words
     x = nltk.FreqDist(ToktokTokenizer().tokenize(totalText))
     plt.figure(figsize=(16, 5))
-    freqdist.plot(20)
+    x.plot(20)
 
 
     ##MAIN CATEGORY CLASSIFICATION
@@ -138,9 +140,9 @@ if __name__ == "__main__":
     x1 = df['title'].values
     x2 = df['abstract'].values
     y = new_df.values
-    x1 = x1[0:5000]
+    '''x1 = x1[0:5000]
     x2 = x2[0:5000]
-    y = y[0:5000]
+    y = y[0:5000]'''
 
 
     cvTitle = CountVectorizer().fit(x1)
@@ -160,6 +162,7 @@ if __name__ == "__main__":
 
     x = pd.concat([tit,abs], axis=1)
 
+    print("Training Binary Relevance classifier")
     xtrain, xtest, ytrain, ytest = train_test_split(x, y)
     classifier = BinaryRelevance(GaussianNB())
     classifier.fit(xtrain, ytrain)
@@ -170,6 +173,6 @@ if __name__ == "__main__":
 
     conf_mat = confusion_matrix(ytest[:,1], predictions[:,1])
 
-
+    print("Accuracy scores:")
     for i in range(len(allCategories)):
         print(accuracy_score(ytest[:,i+1], predictions[:,i+1]))
