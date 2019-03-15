@@ -140,9 +140,9 @@ if __name__ == "__main__":
     x1 = df['title'].values
     x2 = df['abstract'].values
     y = new_df.values
-    '''x1 = x1[0:5000]
+    x1 = x1[0:5000]
     x2 = x2[0:5000]
-    y = y[0:5000]'''
+    y = y[0:5000]
 
 
     cvTitle = CountVectorizer().fit(x1)
