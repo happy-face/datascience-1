@@ -1,5 +1,5 @@
 import pandas as pd
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
 import nltk
@@ -66,19 +66,14 @@ if __name__ == "__main__":
         allCategories.extend(n)
         allCategories = list(set(allCategories))
 
-    #works, but there must be a better way! (very slow!!!)
-    '''new_df = pd.DataFrame(columns = allCategories)
-    for cat in allCategories:
-        print(cat)
-        for idx in range(len(df.main_categories)):
-            print(idx)
-            if cat in df['main_categories'][idx]:
-                new_df.loc[idx,cat] = 1
-            else:
-                new_df.loc[idx, cat] = 0'''
+    category_to_id = dict([(j,i) for i, j in enumerate(allCategories)])
+    def OneHotEncoder(tags):
+        vec = [0] * len(allCategories)
+        for tag in tags:
+            vec[category_to_id[tag]]=1
+        return vec
 
-    #new_df.to_csv('OutputData_OneHotEncoded.csv')
-    new_df = pd.read_csv('OutputData_OneHotEncoded.csv')
+    y_df = df['main_categories'].apply(OneHotEncoder)
 
     print("processing abstract text")
     #ABSTRACT TEXT PROCESSING
@@ -139,7 +134,7 @@ if __name__ == "__main__":
 
     x1 = df['title'].values
     x2 = df['abstract'].values
-    y = new_df.values
+    y = y_df.values
     x1 = x1[0:5000]
     x2 = x2[0:5000]
     y = y[0:5000]
