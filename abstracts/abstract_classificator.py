@@ -170,4 +170,4 @@ if __name__ == "__main__":
 
     print("Accuracy scores:")
     for i in range(len(allCategories)):
-        print(accuracy_score(ytest[:,i+1], predictions[:,i+1]))
+        print(accuracy_score(ytest[:,i], predictions[:,i]))
