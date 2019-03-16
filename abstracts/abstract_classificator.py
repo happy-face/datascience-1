@@ -168,6 +168,8 @@ if __name__ == "__main__":
 
     conf_mat = confusion_matrix(ytest[:,1], predictions[:,1])
 
+    print(accuracy_score(ytest, predictions))
+
     print("Accuracy scores:")
     for i in range(len(allCategories)):
         print(accuracy_score(ytest[:,i], predictions[:,i]))
