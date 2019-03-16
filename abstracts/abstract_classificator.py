@@ -1,5 +1,5 @@
 import pandas as pd
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
 import nltk
@@ -168,8 +168,10 @@ if __name__ == "__main__":
 
     conf_mat = confusion_matrix(ytest[:,1], predictions[:,1])
 
-    print(accuracy_score(ytest, predictions))
-
     print("Accuracy scores:")
     for i in range(len(allCategories)):
         print(accuracy_score(ytest[:,i], predictions[:,i]))
+
+    print("Full accuracy score:")
+    print(accuracy_score(ytest, predictions))
+
