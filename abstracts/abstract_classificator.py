@@ -1,5 +1,5 @@
 import pandas as pd
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
 import nltk
@@ -158,8 +158,14 @@ if __name__ == "__main__":
 
     x = pd.concat([tit,abs], axis=1)
 
+
     print("Training Binary Relevance classifier")
     xtrain, xtest, ytrain, ytest = train_test_split(x, y)
+
+    #selecting only the top k features from the set
+    from sklearn.feature_selection import SelectKBest, chi2
+    xtrain = SelectKBest(chi2, k=1000).fit_transform(xtrain, ytrain)
+
     classifier = BinaryRelevance(GaussianNB())
     classifier.fit(xtrain, ytrain)
 
@@ -175,4 +181,3 @@ if __name__ == "__main__":
 
     print("Full accuracy score:")
     print(accuracy_score(ytest, predictions))
-
