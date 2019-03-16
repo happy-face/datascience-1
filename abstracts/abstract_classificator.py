@@ -1,5 +1,5 @@
 import pandas as pd
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
 import nltk
@@ -74,6 +74,7 @@ if __name__ == "__main__":
         return vec
 
     y_df = df['main_categories'].apply(OneHotEncoder)
+    y_df = pd.DataFrame(y_df.values.tolist(), columns=[0, 1, 2, 3, 4, 5, 6, 7])
 
     print("processing abstract text")
     #ABSTRACT TEXT PROCESSING
