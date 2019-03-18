@@ -133,38 +133,63 @@ if __name__ == "__main__":
     ##MAIN CATEGORY CLASSIFICATION
     #Binary relevance
 
+    nmax = 1000 #max number of samples to use in data set
     x1 = df['title'].values
     x2 = df['abstract'].values
     y = y_df.values
-    x1 = x1[0:5000]
-    x2 = x2[0:5000]
-    y = y[0:5000]
+    x1 = x1[0:nmax]
+    x2 = x2[0:nmax]
 
+    import numpy as np
+    x = np.vstack((x1, x2))
+    x = x.T
+    y = y[0:nmax]
 
-    cvTitle = CountVectorizer().fit(x1)
-    title = pd.DataFrame(cvTitle.transform(x1).todense(), columns=cvTitle.get_feature_names())
-
-    cvAbstract = CountVectorizer().fit(x2)
-    abstract = pd.DataFrame(cvAbstract.transform(x2).todense(), columns=cvAbstract.get_feature_names())
-
-    #x = pd.concat([title, abstract], axis=1)
-
-
-    tfidftitle = TfidfTransformer().fit(title)
-    tit = pd.DataFrame(tfidftitle.transform(title).todense())
-
-    tfidfabs = TfidfTransformer().fit(abstract)
-    abs = pd.DataFrame(tfidfabs.transform(abstract).todense())
-
-    x = pd.concat([tit,abs], axis=1)
-
-
-    print("Training Binary Relevance classifier")
+    # split a training set and a test set
     xtrain, xtest, ytrain, ytest = train_test_split(x, y)
 
-    #selecting only the top k features from the set
+    print("%d documents in training set" %len(xtrain))
+    print("%d documents in test set" % len(xtest))
+
+    print("Extracting features from the training data using a vectorizer")
+
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    vecTitle = TfidfVectorizer(sublinear_tf=True, stop_words='english', ngram_range=(1,2))
+    title_train = pd.DataFrame(vecTitle.fit_transform(xtrain[:,0]).todense(), columns = vecTitle.get_feature_names())
+
+    vecAbstract = TfidfVectorizer(sublinear_tf=True, stop_words='english', ngram_range=(1,2))
+    abstract_train = pd.DataFrame(vecAbstract.fit_transform(xtrain[:,1]).todense(), columns = vecAbstract.get_feature_names())
+
+    xtrain = pd.concat([title_train, abstract_train], axis=1)
+
+
+    print("Extracting features from the test data using the same vectorizer")
+    title_test = pd.DataFrame(vecTitle.transform(xtest[:,0]).todense(), columns = vecTitle.get_feature_names())
+    abstract_test = pd.DataFrame(vecAbstract.transform(xtest[:,1]).todense(), columns = vecAbstract.get_feature_names())
+
+    xtest = pd.concat([title_test, abstract_test], axis=1)
+
+    # mapping integer feature names to original token string
+    feature_title = vecTitle.get_feature_names()
+    feature_abstract = vecAbstract.get_feature_names()
+
+    feature_names = feature_title + feature_abstract
+
+    # selecting the best k features from the data set
+    chi2_param = 10000
+    print("Extracting %d best features by a chi-squared test" % chi2_param)
+
     from sklearn.feature_selection import SelectKBest, chi2
-    xtrain = SelectKBest(chi2, k=1000).fit_transform(xtrain, ytrain)
+
+    ch2 = SelectKBest(chi2, k=chi2_param)
+    xtrain = ch2.fit_transform(xtrain,ytrain)
+    xtest = ch2.transform(xtest)
+
+    feature_names = [feature_names[i] for i in ch2.get_support(indices=True)]
+
+    feature_names = np.asarray(feature_names)
+
+    print("Training Binary Relevance classifier")
 
     classifier = BinaryRelevance(GaussianNB())
     classifier.fit(xtrain, ytrain)
@@ -172,12 +197,12 @@ if __name__ == "__main__":
     predictions = classifier.predict(xtest.astype(float))
     predictions = predictions.todense()
 
+    # conf_mat = confusion_matrix(ytest[:,1], predictions[:,1])
 
-    conf_mat = confusion_matrix(ytest[:,1], predictions[:,1])
+    score = accuracy_score(ytest, predictions)
+    print("accuracy: %0.3f" % score)
 
-    print("Accuracy scores:")
-    for i in range(len(allCategories)):
-        print(accuracy_score(ytest[:,i], predictions[:,i]))
+    from sklearn import metrics
+    print("classification report:")
+    print(metrics.classification_report(ytest, predictions))
 
-    print("Full accuracy score:")
-    print(accuracy_score(ytest, predictions))
