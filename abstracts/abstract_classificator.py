@@ -3,6 +3,7 @@
 import argparse
 import os
 import operator
+import scipy
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -92,7 +93,7 @@ if __name__ == "__main__":
     if not os.path.exists(args.output):
         os.makedirs(args.output)
 
-    df = pd.read_csv(args.input)
+    df = pd.read_csv(args.input, nrows=args.max_samples)
     df.head()
 
     #add number of tags column
@@ -145,7 +146,7 @@ if __name__ == "__main__":
         return vec
 
     y_df = df['main_categories'].apply(OneHotEncoder)
-    y_df = pd.DataFrame(y_df.values.tolist(), columns=[0, 1, 2, 3, 4, 5, 6, 7])
+    y_df = pd.DataFrame(y_df.values.tolist(), columns=range(0, len(category_to_id)))
 
     print("processing abstract text")
     #ABSTRACT TEXT PROCESSING
@@ -229,18 +230,24 @@ if __name__ == "__main__":
 
     # title features
     vec_title = TfidfVectorizer(sublinear_tf=True, stop_words='english', ngram_range=(1,2))
-    title_train = pd.DataFrame(vec_title.fit_transform(x_train[:,0]).todense(), columns = vec_title.get_feature_names())
+    #title_train = pd.DataFrame(vec_title.fit_transform(x_train[:,0]).todense(), columns = vec_title.get_feature_names())
+    title_train = vec_title.fit_transform(x_train[:,0])
     feature_names += get_feature_names("tit-", vec_title)
-    title_test = pd.DataFrame(vec_title.transform(x_test[:,0]).todense(), columns = vec_title.get_feature_names())
+    #title_test = pd.DataFrame(vec_title.transform(x_test[:,0]).todense(), columns = vec_title.get_feature_names())
+    title_test = vec_title.transform(x_test[:,0])
 
     # abstract features
     vec_abstract = TfidfVectorizer(sublinear_tf=True, stop_words='english', ngram_range=(1,2))
-    abstract_train = pd.DataFrame(vec_abstract.fit_transform(x_train[:,1]).todense(), columns = vec_abstract.get_feature_names())
+    #abstract_train = pd.DataFrame(vec_abstract.fit_transform(x_train[:,1]).todense(), columns = vec_abstract.get_feature_names())
+    abstract_train = vec_abstract.fit_transform(x_train[:,1])
     feature_names += get_feature_names("abs-", vec_abstract)
-    abstract_test = pd.DataFrame(vec_abstract.transform(x_test[:,1]).todense(), columns = vec_abstract.get_feature_names())
+    #abstract_test = pd.DataFrame(vec_abstract.transform(x_test[:,1]).todense(), columns = vec_abstract.get_feature_names())
+    abstract_test = vec_abstract.transform(x_test[:,1])
 
-    x_train = pd.concat([title_train, abstract_train], axis=1)
-    x_test = pd.concat([title_test, abstract_test], axis=1)
+    #x_train = pd.concat([title_train, abstract_train], axis=1)
+    #x_test = pd.concat([title_test, abstract_test], axis=1)
+    x_train = scipy.sparse.hstack((title_train, abstract_train))
+    x_test = scipy.sparse.hstack((title_test, abstract_test))
 
     print("Total feature count: %d" % len(feature_names))
 
