@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument("-i", "--input", required=True, help="Input CSV dataset file")
     parser.add_argument("-o", "--output", required=True, help="Output folder")
     parser.add_argument("--force", action="store_true")
-    parser.add_argument("-ms", "--max-samples", type=int, default=0, help="Maximum number of samples to use for training (0 - use entire dataset).")
+    parser.add_argument("-ms", "--max-samples", type=int, help="Maximum number of samples to use for training (0 - use entire dataset).")
 
     return parser.parse_args()
 
