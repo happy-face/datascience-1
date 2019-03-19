@@ -46,8 +46,9 @@ def output_results(file, accuracy_score, classification_report, category_to_id):
         file.write("%i\t%s\n" % (id, category))
 
 
-def output_summary(file, best_feature_count, best_accuracy_score, best_classification_report, category_to_id):
-    file.write("best_feature_count = %f.1" % best_feature_count)
+def output_summary(file, best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, category_to_id):
+    file.write("best_feature_count = %d\n" % best_feature_count)
+    file.write("best_feature_ratio = %.1f%%\n" % best_feature_ratio)
     file.write("\n")
     output_results(file, best_accuracy_score, best_classification_report, category_to_id)
 
@@ -270,7 +271,7 @@ if __name__ == "__main__":
 
         # output results to file for this feature count experiment
         output_results(sys.stdout, accuracy_score, classification_report, category_to_id)
-        with open(os.path.join(args.output, "results_10.txt"), 'w') as results_file:
+        with open(os.path.join(args.output, "results_%d.txt" % int(100 * feature_ratio)), 'w') as results_file:
             output_results(results_file, accuracy_score, classification_report, category_to_id)
         print()
 
@@ -284,6 +285,6 @@ if __name__ == "__main__":
     print()
     print()
     print("=== summary ===")
-    output_summary(sys.stdout, best_feature_count, best_accuracy_score, best_classification_report, category_to_id)
+    output_summary(sys.stdout, best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, category_to_id)
     with open(os.path.join(args.output, "summary.txt"), 'w') as summary_file:
-        output_summary(summary_file, best_feature_count, best_accuracy_score, best_classification_report, category_to_id)
+        output_summary(summary_file, best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, category_to_id)
