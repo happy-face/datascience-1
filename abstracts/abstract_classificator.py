@@ -4,6 +4,7 @@ import argparse
 import os
 import operator
 import scipy
+import numpy as np
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -20,6 +21,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from skmultilearn.problem_transform import BinaryRelevance
 from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 
 import sklearn.metrics as metrics
@@ -28,7 +30,9 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", required=True, help="Input CSV dataset file")
     parser.add_argument("-o", "--output", required=True, help="Output folder")
-    parser.add_argument("--force", action="store_true")
+    parser.add_argument("--force", action="store_true", help="Overwrites output folder if it already exists")
+    parser.add_argument("--binary-relevance-naive-bayes", action="store_true", help="Use binary relevance with naive bayes classifier")
+    parser.add_argument("--binary-relevance-logistic-regression", action="store_true", help="Use binary relevance with logistic regression classifier")
     parser.add_argument("-ms", "--max-samples", type=int, help="Maximum number of samples to use for training (0 - use entire dataset).")
 
     return parser.parse_args()
@@ -52,6 +56,126 @@ def output_summary(file, best_feature_count, best_feature_ratio, best_accuracy_s
     file.write("best_feature_ratio = %.1f%%\n" % best_feature_ratio)
     file.write("\n")
     output_results(file, best_accuracy_score, best_classification_report, category_to_id)
+
+
+#
+# Adds main_categories column
+#
+def generate_main_categories(df):
+    # Extract main categories from tag strings
+    def main_categories(tags):
+        main_tags = [i.split(".") for i in tags if i]
+        categories = [item[0] for item in main_tags]
+        categories = list(set(categories))
+        return categories
+
+    # Handling of physics sub-categories'
+    def physics_tags(tags):
+        physics_categories = ['astro-ph', 'cond-mat', 'gr-qc', 'hep-ex', 'hep-lat', 'hep-ph', 'hep-th', 'math-ph', 'nlin',
+                              'nucl-ex', 'nucl-th', 'physics', 'quant-ph']
+        result = ['physics' if item in physics_categories else item for item in tags]
+        return list(set(result))
+
+    df['main_categories'] = df['categories'].apply(main_categories)
+    df['main_categories'] = df['main_categories'].apply(physics_tags)
+
+
+#
+# Writes dataset statistics to file
+#
+
+def output_subcategory_stats(df, output_path, summary_file):
+    # compute stats
+    max_category_count = max(len(x) for x in df['categories'])
+    category_count_to_abstract_count = [0] * max_category_count
+    for categories in df['categories']:
+        category_count_to_abstract_count[len(categories) - 1] += 1
+
+    # generate bar plot
+    category_count_names = [str(x + 1) for x in range(0, max_category_count)]
+    y_pos = np.arange(len(category_count_names))
+    plt.figure()
+    plt.bar(y_pos, category_count_to_abstract_count, align='center', alpha=0.5)
+    plt.xticks(y_pos, category_count_names)
+    plt.ylabel('Abstract Count')
+    plt.xlabel('Subcategory Count')
+    plt.title('Abstract Count vs Subcategory Count')
+    plt.savefig(os.path.join(output_path, 'subcategory_counts.png'))
+
+    # output to summary file
+    summary_file.write("# Subcategory Stats\n")
+    summary_file.write("Subcategory Count\tAbstract Count\n")
+    for i in range(0, len(category_count_to_abstract_count)):
+        summary_file.write("%d\t%d\n" % (i, category_count_to_abstract_count[i]))
+    summary_file.write("\n\n")
+
+
+def output_main_category_stats(df, output_path, summary_file):
+    # compute stats
+    max_category_count = max(len(x) for x in df['main_categories'])
+    category_count_to_abstract_count = [0] * max_category_count
+    for categories in df['main_categories']:
+        category_count_to_abstract_count[len(categories) - 1] += 1
+
+    # generate bar plot
+    category_count_names = [str(x + 1) for x in range(0, max_category_count)]
+    y_pos = np.arange(len(category_count_names))
+    plt.figure()
+    plt.bar(y_pos, category_count_to_abstract_count, align='center', alpha=0.5)
+    plt.xticks(y_pos, category_count_names)
+    plt.ylabel('Abstract Count')
+    plt.xlabel('Main Category Count')
+    plt.title('Abstract Count vs Main Category Count')
+    plt.savefig(os.path.join(output_path, 'maincategory_counts.png'))
+
+    # output to summary file
+    summary_file.write("# Main Category Stats\n")
+    summary_file.write("Main Category Count\tAbstract Count\n")
+    for i in range(0, len(category_count_to_abstract_count)):
+        summary_file.write("%d\t%d\n" % (i, category_count_to_abstract_count[i]))
+    summary_file.write("\n\n")
+
+
+def output_main_category_tuple_stats(df, output_path, summary_file):
+    # compute stats
+    category_tuple_to_count = {}
+    for categories in df['main_categories']:
+        category_tuple = "+".join(sorted(categories))
+        if not category_tuple in category_tuple_to_count:
+            category_tuple_to_count[category_tuple] = 0
+        category_tuple_to_count[category_tuple] += 1
+
+    # generate bar plot
+    sorted_items = sorted(category_tuple_to_count.items(), key=operator.itemgetter(1))
+    category_tuples = []
+    counts = []
+    for category_tuple, count in sorted_items:
+        category_tuples.append(category_tuple)
+        counts.append(count)
+
+    y_pos = np.arange(len(category_tuples))
+    plt.figure(figsize=(15, 20))
+    plt.barh(y_pos, counts, align='center', alpha=0.5)
+    plt.yticks(y_pos, category_tuples)
+    plt.xlabel('Abstract Count')
+    plt.ylabel('Category Combination Count')
+    plt.title('Abstract Count vs Category Combination')
+    plt.savefig(os.path.join(output_path, 'category_combination_counts.png'), dpi=300)
+
+    # output to summary file
+    summary_file.write("# Category Combination Stats\n")
+    summary_file.write("Total Category Combinations: %d\n" % len(category_tuple_to_count))
+    summary_file.write("Category Combination\tAbstract Count\n")
+    for category_tuple, count in reversed(sorted_items):
+        summary_file.write("%s\t%d\n" % (category_tuple, count))
+    summary_file.write("\n\n")
+
+
+def output_dataset_stats(df, output_path):
+    with open(os.path.join(output_path, "dataset_summary.txt"), 'w') as summary_file:
+        output_subcategory_stats(df, output_path, summary_file)
+        output_main_category_stats(df, output_path, summary_file)
+        output_main_category_tuple_stats(df, output_path, summary_file)
 
 
 def get_feature_names(feature_prefix, vectorizer):
@@ -88,7 +212,7 @@ if __name__ == "__main__":
 
     # create output folder
     if os.path.exists(args.output) and not args.force:
-        print("Output folder %s already exists!" % (args.output))
+        print("Output folder %s already exists! Use --force to override this check." % (args.output))
         exit()
     if not os.path.exists(args.output):
         os.makedirs(args.output)
@@ -96,42 +220,11 @@ if __name__ == "__main__":
     df = pd.read_csv(args.input, nrows=args.max_samples)
     df.head()
 
-    #add number of tags column
+    # split categories string into list of categories
     df['categories'] = df['categories'].str.split()
-    df['number_of_tags'] = df['categories'].apply(len)
-    max_tags = df['number_of_tags'].max()
 
-    #how many abstracts with 1,2,3... tags
-    abs_per_tag = [len(df[df['number_of_tags']== (x+1)]) for x in range(max_tags)]
-
-    def main_categories(tags):
-        # Function that converts given tags to a list of main categories
-        #test = ['cs.it', 'cs.dm', 'math.co', 'math.it']
-        main_tags = [i.split(".") for i in tags if i]
-        categories = [item[0] for item in main_tags]
-        categories = list(set(categories))
-        return categories
-
-
-    physics_categories = ['astro-ph', 'cond-mat', 'gr-qc', 'hep-ex', 'hep-lat', 'hep-ph', 'hep-th', 'math-ph', 'nlin',
-                          'nucl-ex', 'nucl-th', 'physics', 'quant-ph']
-
-    def physics_tags(tags):
-        #Function that correct all physics sub-categories to 'physics'
-        #tags = ['cs', 'math', 'quant-ph']
-        result = ['physics' if item in physics_categories else item for item in tags]
-        return list(set(result))
-
-
-    df['main_categories'] = df['categories'].apply(main_categories)
-    df['main_categories'] = df['main_categories'].apply(physics_tags)
-    df['number_of_categories'] = df['main_categories'].apply(len)
-
-    max_tags = df['number_of_categories'].max()
-    print(max_tags)
-
-    #how many abstracts with 1,2,3... tags
-    abs_no_categ = [len(df[df['number_of_categories'] == x+1]) for x in range(max_tags)]
+    generate_main_categories(df)
+    output_dataset_stats(df, args.output)
 
     #what are main categories?
     unique_categories = set()
@@ -202,14 +295,6 @@ if __name__ == "__main__":
     x1 = df['title'].values
     x2 = df['abstract'].values
     y = y_df.values
-
-    # Keep only first N features if required
-    if args.max_samples != 0:
-        x1 = x1[:args.max_samples]
-        x2 = x2[:args.max_samples]
-        y = y[:args.max_samples]
-
-    import numpy as np
     x = np.vstack((x1, x2))
     x = x.T
 
@@ -230,22 +315,16 @@ if __name__ == "__main__":
 
     # title features
     vec_title = TfidfVectorizer(sublinear_tf=True, stop_words='english', ngram_range=(1,2))
-    #title_train = pd.DataFrame(vec_title.fit_transform(x_train[:,0]).todense(), columns = vec_title.get_feature_names())
     title_train = vec_title.fit_transform(x_train[:,0])
     feature_names += get_feature_names("tit-", vec_title)
-    #title_test = pd.DataFrame(vec_title.transform(x_test[:,0]).todense(), columns = vec_title.get_feature_names())
     title_test = vec_title.transform(x_test[:,0])
 
     # abstract features
     vec_abstract = TfidfVectorizer(sublinear_tf=True, stop_words='english', ngram_range=(1,2))
-    #abstract_train = pd.DataFrame(vec_abstract.fit_transform(x_train[:,1]).todense(), columns = vec_abstract.get_feature_names())
     abstract_train = vec_abstract.fit_transform(x_train[:,1])
     feature_names += get_feature_names("abs-", vec_abstract)
-    #abstract_test = pd.DataFrame(vec_abstract.transform(x_test[:,1]).todense(), columns = vec_abstract.get_feature_names())
     abstract_test = vec_abstract.transform(x_test[:,1])
 
-    #x_train = pd.concat([title_train, abstract_train], axis=1)
-    #x_test = pd.concat([title_test, abstract_test], axis=1)
     x_train = scipy.sparse.hstack((title_train, abstract_train))
     x_test = scipy.sparse.hstack((title_test, abstract_test))
 
@@ -265,7 +344,14 @@ if __name__ == "__main__":
 
         print("Training Binary Relevance classifier")
 
-        classifier = BinaryRelevance(GaussianNB())
+        if args.binary_relevance_naive_bayes:
+            classifier = BinaryRelevance(GaussianNB())
+        elif args.binary_relevance_logistic_regression:
+            classifier = BinaryRelevance(LogisticRegression())
+        else:
+            print("ERROR: specify classification model")
+            exit()
+
         classifier.fit(x_train_sel, y_train)
 
         predictions = classifier.predict(x_test_sel.astype(float))
