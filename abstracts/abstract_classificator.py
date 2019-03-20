@@ -23,6 +23,7 @@ from skmultilearn.problem_transform import BinaryRelevance
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
 
 import sklearn.metrics as metrics
 
@@ -38,7 +39,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def output_results(file, accuracy_score, classification_report, category_to_id):
+def output_results(file, accuracy_score, classification_report, category_to_id, classifier_details):
     file.write("accuracy score: " + str(accuracy_score) + "\n")
     file.write("\n")
     file.write("classification report:\n")
@@ -49,13 +50,18 @@ def output_results(file, accuracy_score, classification_report, category_to_id):
     category_id_pairs = sorted(category_to_id.items(), key=operator.itemgetter(1))
     for category, id in category_id_pairs:
         file.write("%i\t%s\n" % (id, category))
+        
+    # write classifier parameters
+    file.write("\n")
+    file.write("classifier details:\n")
+    file.write(classifier_details)
+    
 
-
-def output_summary(file, best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, category_to_id):
+def output_summary(file, best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, category_to_id, best_classifier_details):
     file.write("best_feature_count = %d\n" % best_feature_count)
     file.write("best_feature_ratio = %.1f%%\n" % best_feature_ratio)
     file.write("\n")
-    output_results(file, best_accuracy_score, best_classification_report, category_to_id)
+    output_results(file, best_accuracy_score, best_classification_report, category_to_id, best_classifier_details)
 
 
 #
@@ -334,6 +340,7 @@ if __name__ == "__main__":
     best_feature_ratio = 0.0
     best_feature_count = 0
     best_classification_report = ""
+    best_classifier_detals = ""
 
     for i in range(0, 10):
         # selecting the best k features from the data set
@@ -344,15 +351,27 @@ if __name__ == "__main__":
 
         print("Training Binary Relevance classifier")
 
+        classifier_details = "NA"
         if args.binary_relevance_naive_bayes:
             classifier = BinaryRelevance(GaussianNB())
+            classifier.fit(x_train_sel, y_train)
+
         elif args.binary_relevance_logistic_regression:
-            classifier = BinaryRelevance(LogisticRegression())
+            parameters = [
+                {
+                    'classifier': [LogisticRegression()],
+                    'classifier__C': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100],
+                }
+            ]
+            classifier = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy', n_jobs = 5)
+            classifier.fit(x_train_sel, y_train)
+            classifier_details = ""
+            for key, value in classifier.cv_results_.items():
+                classifier_details += "\t".join([key, value]) + "\n"
         else:
             print("ERROR: specify classification model")
             exit()
 
-        classifier.fit(x_train_sel, y_train)
 
         predictions = classifier.predict(x_test_sel.astype(float))
         predictions = predictions.todense()
@@ -363,9 +382,9 @@ if __name__ == "__main__":
         classification_report = metrics.classification_report(y_test, predictions)
 
         # output results to file for this feature count experiment
-        output_results(sys.stdout, accuracy_score, classification_report, category_to_id)
+        output_results(sys.stdout, accuracy_score, classification_report, category_to_id, classifier_details)
         with open(os.path.join(args.output, "results_%d.txt" % int(100 * feature_ratio)), 'w') as results_file:
-            output_results(results_file, accuracy_score, classification_report, category_to_id)
+            output_results(results_file, accuracy_score, classification_report, category_to_id, classifier_details)
         print()
 
         # update best results if needed
@@ -374,10 +393,11 @@ if __name__ == "__main__":
             best_feature_ratio = feature_ratio
             best_feature_count = feature_count
             best_classification_report = classification_report
+            best_classifier_details = classifier_details
 
     print()
     print()
     print("=== summary ===")
-    output_summary(sys.stdout, best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, category_to_id)
+    output_summary(sys.stdout, best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, category_to_id, best_classifier_details)
     with open(os.path.join(args.output, "summary.txt"), 'w') as summary_file:
-        output_summary(summary_file, best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, category_to_id)
+        output_summary(summary_file, best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, category_to_id, best_classifier_details)
