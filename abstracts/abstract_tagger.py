@@ -30,11 +30,15 @@ def parse_args():
     parser.add_argument("-te", "--test-data", required=True, help="Input test data CSV")
     parser.add_argument("-o", "--output", required=True, help="Output folder")
     parser.add_argument("--force", action="store_true", help="Overwrites output folder if it already exists")
-    parser.add_argument("--binary-relevance-naive-bayes", action="store_true", help="Use binary relevance with naive bayes classifier")
-    parser.add_argument("--binary-relevance-logistic-regression", action="store_true", help="Use binary relevance with logistic regression classifier")
-    parser.add_argument("-ms", "--max-samples", type=int, help="Maximum number of samples to use for training (0 - use entire dataset).")
+    parser.add_argument("-ang", "--abstract-ngrams", type=int, default=2, help="Abstract ngram features that should be used. Specify 0 to turn off abstract features.")
+    parser.add_argument("-tng", "--title-ngrams", type=int, default=2, help="Title ngram features that should be used. Specify 0 to turn off title features.")
+    parser.add_argument("-fsr", "--feature-selection-ratio", nargs='+', type=float, default=[1.0], help="Ratio of features which should be keept in feature selection.")
+    parser.add_argument("-brnb", "--binary-relevance-naive-bayes", action="store_true", help="Use binary relevance with naive bayes classifier")
+    parser.add_argument("-brlr", "--binary-relevance-logistic-regression", action="store_true", help="Use binary relevance with logistic regression classifier")
+    parser.add_argument("-ms", "--max-rows", type=int, help="Maximum number of samples to use for training (0 - use entire dataset).")
 
     return parser.parse_args()
+
 
 def output_results(file, accuracy_score, classification_report, category_to_id, classifier_details):
     file.write("accuracy score: " + str(accuracy_score) + "\n")
@@ -51,7 +55,7 @@ def output_results(file, accuracy_score, classification_report, category_to_id, 
     # write classifier parameters
     file.write("\n")
     file.write("classifier details:\n")
-    file.write(classifier_details)
+    file.write(classifier_details + "\n")
 
 def output_summary(file, best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, category_to_id, best_classifier_details):
     file.write("best_feature_count = %d\n" % best_feature_count)
@@ -111,17 +115,6 @@ def normalize_abstracts(df):
     df['abstract'] = df['abstract'].map(lambda x: preprocessing_text(x))
 
 
-#
-# training
-#   - preprocessing
-#   - extracting features (fit)
-#   - selecting features (fit)
-#   - model (fit)
-#
-#
-#
-#
-
 if __name__ == "__main__":
     args = parse_args()
 
@@ -133,15 +126,16 @@ if __name__ == "__main__":
         os.makedirs(args.output)
 
     print("Reading train set: %s" % args.train_data)
-    df_train = pd.read_csv(args.train_data, nrows=args.max_samples)
+    df_train = pd.read_csv(args.train_data, nrows=args.max_rows)
     df_train.head()
 
     print("Reading test set: %s" % args.test_data)
-    df_test = pd.read_csv(args.test_data, nrows=args.max_samples)
+    df_test = pd.read_csv(args.test_data, nrows=args.max_rows)
     df_test.head()
 
-    print("Normalizing abstracts")
+    print("Normalize training abstracts")
     normalize_abstracts(df_train)
+    print("Normalize test abstracts")
     normalize_abstracts(df_test)
 
     # main categories is list serialized as string, convert it back
@@ -152,21 +146,23 @@ if __name__ == "__main__":
     def one_hot_encoder(tags):
         vec = [0] * len(category_to_id)
         for tag in tags:
-            vec[category_to_id[tag]]=1
+            if tag in category_to_id:
+                vec[category_to_id[tag]]=1
+            else:
+                print("WARNING: ignoring tag %s", tag)
         return vec
 
     #Map main categories to integers
     unique_categories = set()
     for n in df_train.main_categories:
-        print n
         unique_categories.update(n)
-    print unique_categories
     category_to_id = dict([(j,i) for i, j in enumerate(sorted(unique_categories))])
 
-
+    print("Generate one hot outputs in training set")
     y_df_train = df_train['main_categories'].apply(one_hot_encoder)
     y_df_train = pd.DataFrame(y_df_train.values.tolist(), columns=range(0, len(category_to_id)))
 
+    print("Generate one hot outputs in test set")
     y_df_test = df_test['main_categories'].apply(one_hot_encoder)
     y_df_test = pd.DataFrame(y_df_test.values.tolist(), columns=range(0, len(category_to_id)))
 
@@ -190,21 +186,28 @@ if __name__ == "__main__":
     from sklearn.feature_extraction.text import TfidfVectorizer
 
     feature_names = []
+    train_feature_groups = []
+    test_feature_groups = []
 
     # title features
-    vec_title = TfidfVectorizer(sublinear_tf=True, stop_words='english', ngram_range=(1,2))
-    title_train = vec_title.fit_transform(x_train[:,0])
-    feature_names += get_feature_names("tit-", vec_title)
-    title_test = vec_title.transform(x_test[:,0])
+    if args.title_ngrams > 0:
+        vec_title = TfidfVectorizer(sublinear_tf=True, stop_words='english', ngram_range=(1,args.title_ngrams))
+        train_feature_groups.append(vec_title.fit_transform(x_train[:,0]))
+        feature_names += get_feature_names("tit-", vec_title)
+        test_feature_groups.append(vec_title.transform(x_test[:,0]))
 
     # abstract features
-    vec_abstract = TfidfVectorizer(sublinear_tf=True, stop_words='english', ngram_range=(1,2))
-    abstract_train = vec_abstract.fit_transform(x_train[:,1])
-    feature_names += get_feature_names("abs-", vec_abstract)
-    abstract_test = vec_abstract.transform(x_test[:,1])
+    if args.abstract_ngrams > 0:
+        vec_abstract = TfidfVectorizer(sublinear_tf=True, stop_words='english', ngram_range=(1,args.abstract_ngrams))
+        train_feature_groups.append(vec_abstract.fit_transform(x_train[:,1]))
+        feature_names += get_feature_names("abs-", vec_abstract)
+        test_feature_groups.append(vec_abstract.transform(x_test[:,1]))
 
-    x_train = scipy.sparse.hstack((title_train, abstract_train))
-    x_test = scipy.sparse.hstack((title_test, abstract_test))
+    assert len(train_feature_groups) > 0
+    assert len(test_feature_groups) > 0
+
+    x_train = scipy.sparse.hstack(tuple(train_feature_groups))
+    x_test = scipy.sparse.hstack(tuple(test_feature_groups))
 
     print("Total feature count: %d" % len(feature_names))
 
@@ -214,35 +217,39 @@ if __name__ == "__main__":
     best_classification_report = ""
     best_classifier_detals = ""
 
-    for i in range(0, 10):
+    for feature_ratio in args.feature_selection_ratio:
         # selecting the best k features from the data set
-        feature_ratio = float(i + 1) / 10.0
-        feature_count = int(((i + 1) * len(feature_names)) / 10)
-        print("Extracting %.1f%% best features by a chi-squared test" % feature_ratio)
+        feature_count = int(feature_ratio * len(feature_names))
+        print("Extracting %.1f%% best features by a chi-squared test" % (feature_ratio * 100))
         x_train_sel, x_test_sel, feature_names_sel = chi_square_feature_selection(x_train, y_train, x_test, feature_names, feature_count)
-
-        print("Training Binary Relevance classifier")
 
         classifier_details = "NA"
         if args.binary_relevance_naive_bayes:
+            print("Train binary relevance naive bayes tagger")
             classifier = BinaryRelevance(GaussianNB())
             classifier.fit(x_train_sel, y_train)
 
         elif args.binary_relevance_logistic_regression:
+            print("Train binary relevance logistic regression tagger")
             parameters = [
                 {
                     'classifier': [LogisticRegression(solver='lbfgs')],
                     'classifier__C': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100],
                 }
             ]
-            classifier = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy', iid=True)
-            classifier.fit(x_train_sel, y_train)
-            classifier_details = "best_params = " + str(classifier.best_params_)
+            # iid = True : use average across folds as selection criteria
+            # refit = True : fit model on all data after getting best parameters with CV
+            gridSearch = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy', iid=True, refit=True)
+            gridSearch.fit(x_train_sel, y_train)
+            classifier_details = "best_params = " + str(gridSearch.best_params_)
+            classifier = gridSearch.best_estimator_
+
         else:
             print("ERROR: specify classification model")
             exit()
 
 
+        # test the model on test set
         predictions = classifier.predict(x_test_sel.astype(float))
         predictions = predictions.todense()
 

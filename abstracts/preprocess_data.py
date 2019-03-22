@@ -184,4 +184,5 @@ if __name__ == "__main__":
 
 
     df_rand = randomize_dataset(df)
-    df_rand.to_csv(os.path.join(args.output, os.path.basename(args.input) + '_processed.csv'))
+    out_file_name = os.path.splitext(os.path.basename(args.input))[0]
+    df_rand.to_csv(os.path.join(args.output, out_file_name + '_processed.csv'))
