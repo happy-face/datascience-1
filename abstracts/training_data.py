@@ -240,7 +240,7 @@ if __name__ == "__main__":
             classifier.fit(x_train_sel, y_train)
             classifier_details = ""
             for key, value in classifier.cv_results_.items():
-                classifier_details += "\t".join([key, value]) + "\n"
+                classifier_details += "\t".join([str(key), str(value)]) + "\n"
         else:
             print("ERROR: specify classification model")
             exit()
