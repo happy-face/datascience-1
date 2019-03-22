@@ -172,24 +172,6 @@ if __name__ == "__main__":
     generate_main_categories(df)
     output_dataset_stats(df, args.output)
 
-    #what are main categories?
-    unique_categories = set()
-    for n in df.main_categories:
-        unique_categories.update(n)
-    category_to_id = dict([(j,i) for i, j in enumerate(sorted(unique_categories))])
-
-    def one_hot_encoder(tags):
-        vec = [0] * len(category_to_id)
-        for tag in tags:
-            vec[category_to_id[tag]]=1
-        return vec
-
-    y_df = df['main_categories'].apply(one_hot_encoder)
-    y_df = pd.DataFrame(y_df.values.tolist(), columns=range(0, len(category_to_id)))
-
-    #wordcloud representation
-    import sys
-
     totalText = ''
     for x in df.abstract:
         totalText = totalText + ' ' + x

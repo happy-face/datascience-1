@@ -144,6 +144,9 @@ if __name__ == "__main__":
     normalize_abstracts(df_train)
     normalize_abstracts(df_test)
 
+    # main categories is list serialized as string, convert it back
+    df_train['main_categories'] = df_train['main_categories'].apply(eval)
+    df_test['main_categories'] = df_test['main_categories'].apply(eval)
 
     #apply one-hot encoding for Binary Relevance
     def one_hot_encoder(tags):
@@ -155,11 +158,14 @@ if __name__ == "__main__":
     #Map main categories to integers
     unique_categories = set()
     for n in df_train.main_categories:
+        print n
         unique_categories.update(n)
+    print unique_categories
     category_to_id = dict([(j,i) for i, j in enumerate(sorted(unique_categories))])
 
 
     y_df_train = df_train['main_categories'].apply(one_hot_encoder)
+    print y_df_train
     y_df_train = pd.DataFrame(y_df_train.values.tolist(), columns=range(0, len(category_to_id)))
 
     y_df_test = df_test['main_categories'].apply(one_hot_encoder)
