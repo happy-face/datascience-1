@@ -233,7 +233,7 @@ if __name__ == "__main__":
             print("Train binary relevance logistic regression tagger")
             parameters = [
                 {
-                    'classifier': [LogisticRegression(solver='lbfgs')],
+                    'classifier': [LogisticRegression(solver='liblinear')],
                     'classifier__C': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100],
                 }
             ]
