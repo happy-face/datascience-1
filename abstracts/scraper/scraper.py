@@ -8,7 +8,7 @@ def scrape_arxiv(topic):
     #scraper = ax.Scraper(category=topic, date_from='2018-02-01', date_until='2018-04-01') #scrape training data
     scraper = ax.Scraper(category=topic, date_from='2019-01-01', date_until='2019-02-01') #scrape testing data
     output = scraper.scrape()
-    cols = ('id', 'title', 'categories', 'abstract', 'doi', 'created', 'updated', 'authors')
+    cols = ('id', 'title', 'subcategories', 'abstract', 'doi', 'created', 'updated', 'authors')
     df = pd.DataFrame(output, columns=cols)
     return df
 

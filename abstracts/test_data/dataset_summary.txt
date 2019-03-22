@@ -1,0 +1,96 @@
+# Subcategory Stats
+Subcategory Count	Abstract Count
+0	10538
+1	7385
+2	3799
+3	1457
+4	480
+5	128
+6	4
+
+
+# Main Category Stats
+Main Category Count	Abstract Count
+0	15961
+1	6469
+2	1265
+3	96
+
+
+# Category Combination Stats
+Total Category Combinations: 72
+Category Combination	Abstract Count
+physics	8349
+math	4284
+cs	2704
+cs+stat	2016
+math+physics	1516
+cs+math	1396
+cs+math+stat	414
+math+stat	364
+cs+physics	342
+stat	302
+cs+eess	216
+physics+q-bio	198
+cs+math+physics	162
+cs+eess+stat	150
+eess	140
+cs+eess+math	123
+q-bio	121
+cs+physics+stat	108
+cs+q-bio+stat	90
+cs+q-bio	78
+math+q-fin	62
+q-fin	61
+eess+physics	46
+physics+stat	42
+math+physics+stat	33
+math+q-bio	32
+cs+physics+q-bio	27
+eess+math	26
+econ+q-fin	25
+cs+eess+physics	24
+q-bio+stat	20
+physics+q-fin	20
+cs+math+physics+stat	20
+cs+eess+q-bio+stat	20
+cs+eess+math+stat	20
+eess+stat	18
+cs+q-fin	18
+math+physics+q-bio	15
+cs+q-fin+stat	15
+q-fin+stat	14
+econ+physics+q-fin	12
+cs+math+q-bio	12
+econ+math+stat	10
+econ+stat	9
+math+q-fin+stat	9
+cs+math+q-fin	9
+cs+econ+q-fin	8
+cs+physics+q-bio+stat	8
+econ+q-fin+stat	6
+math+q-bio+stat	6
+cs+eess+q-bio	6
+econ+math+q-fin	4
+eess+q-bio	4
+eess+physics+q-bio+stat	4
+eess+math+physics+stat	4
+cs+eess+math+physics	4
+cs+econ+stat	4
+cs+math+physics+q-bio	4
+physics+q-fin+stat	3
+math+physics+q-fin	3
+econ+math+q-fin+stat	3
+eess+q-bio+stat	3
+eess+physics+q-bio	3
+eess+math+stat	3
+eess+physics+stat	3
+cs+econ+math+stat	3
+cs+econ+physics+q-fin	3
+cs+econ	3
+cs+econ+math+q-bio	3
+econ+physics	2
+dg-ga+math	1
+econ+math	1
+
+
