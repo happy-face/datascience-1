@@ -1,0 +1,31 @@
+# Subcategory Stats
+Subcategory Count	Abstract Count
+0	24
+1	39
+2	29
+3	7
+4	1
+
+
+# Main Category Stats
+Main Category Count	Abstract Count
+0	50
+1	37
+2	13
+
+
+# Category Combination Stats
+Total Category Combinations: 10
+Category Combination	Abstract Count
+cs	50
+cs+math	18
+cs+stat	14
+cs+math+stat	4
+cs+math+physics	4
+cs+eess+physics	3
+cs+physics	3
+cs+physics+q-bio	2
+cs+q-bio	1
+cs+q-fin	1
+
+

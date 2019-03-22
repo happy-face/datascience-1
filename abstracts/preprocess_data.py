@@ -11,15 +11,13 @@ from wordcloud import WordCloud
 
 import nltk
 from nltk.tokenize import ToktokTokenizer
-from nltk.corpus import stopwords
-from nltk.stem.wordnet import WordNetLemmatizer
-from nltk.tokenize import ToktokTokenizer
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", required=True, help="Input CSV dataset file")
     parser.add_argument("-o", "--output", required=True, help="Output folder")
+    parser.add_argument("-mr", "--max-rows", type=int, help="Limit number of rows to read from input CSV file.")
     parser.add_argument("--force", action="store_true", help="Overwrites output folder if it already exists")
     return parser.parse_args()
 
@@ -165,7 +163,7 @@ if __name__ == "__main__":
     if not os.path.exists(args.output):
         os.makedirs(args.output)
 
-    df = pd.read_csv(args.input)
+    df = pd.read_csv(args.input, nrows=args.max_rows)
     df.head()
 
     # split subcategories string into list of subcategories

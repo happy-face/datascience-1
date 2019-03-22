@@ -20,10 +20,14 @@ from sklearn.model_selection import GridSearchCV
 
 import sklearn.metrics as metrics
 
+from nltk.corpus import stopwords
+from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.tokenize import ToktokTokenizer
+
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-td", "--train-data", required=True, help="Input train data CSV")
-    parser.add_argument("-ted", "--test-data", required=True, help="Input test data CSV")
+    parser.add_argument("-tr", "--train-data", required=True, help="Input train data CSV")
+    parser.add_argument("-te", "--test-data", required=True, help="Input test data CSV")
     parser.add_argument("-o", "--output", required=True, help="Output folder")
     parser.add_argument("--force", action="store_true", help="Overwrites output folder if it already exists")
     parser.add_argument("--binary-relevance-naive-bayes", action="store_true", help="Use binary relevance with naive bayes classifier")
@@ -226,7 +230,7 @@ if __name__ == "__main__":
                     'classifier__C': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100],
                 }
             ]
-            classifier = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy', n_jobs = 5)
+            classifier = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy')
             classifier.fit(x_train_sel, y_train)
             classifier_details = ""
             for key, value in classifier.cv_results_.items():
