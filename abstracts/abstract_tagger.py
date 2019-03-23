@@ -313,8 +313,8 @@ if __name__ == "__main__":
 
         # output scores to file
         with open(os.path.join(args.output, "results_%d.txt" % int(100 * feature_ratio)), 'w') as results_file:
-            output_results(results_file, "TEST SET", train_accuracy_score, classification_report, classifier_details)
-            output_results(results_file, "TRAINING SET", accuracy_score, train_classification_report, classifier_details)
+            output_results(results_file, "TEST SET", accuracy_score, classification_report, classifier_details)
+            output_results(results_file, "TRAINING SET", train_accuracy_score, train_classification_report, classifier_details)
 
         # update best results if needed
         if (accuracy_score > best_accuracy_score):
