@@ -1,0 +1,70 @@
+# Subcategory Stats
+Subcategory Count	Abstract Count
+0	1774
+1	1024
+2	462
+3	182
+4	60
+5	16
+6	4
+
+
+# Main Category Stats
+Main Category Count	Abstract Count
+0	2625
+1	757
+2	134
+3	6
+
+
+# Category Combination Stats
+Total Category Combinations: 46
+Category Combination	Abstract Count
+physics	1221
+math	769
+cs	517
+math+physics	225
+cs+math	204
+cs+stat	130
+stat	58
+cs+physics	49
+math+stat	47
+cs+math+stat	40
+physics+q-bio	31
+cs+eess	26
+cs+math+physics	26
+eess	25
+cs+eess+math	21
+q-bio	18
+q-fin	17
+cs+q-bio	9
+cs+physics+stat	9
+cs+eess+stat	8
+math+q-fin	8
+cs+q-bio+stat	7
+physics+stat	6
+math+q-bio	6
+math+physics+stat	5
+physics+q-fin	4
+cs+physics+q-bio	4
+eess+math	4
+math+q-fin+stat	3
+q-bio+stat	3
+math+physics+q-bio	3
+math+q-bio+stat	2
+math+physics+q-bio+stat	2
+cs+math+q-bio+stat	2
+cs+q-fin	2
+cs+q-fin+stat	1
+cs+math+q-fin	1
+eess+physics	1
+cs+math+q-bio	1
+cs+eess+physics	1
+eess+stat	1
+cs+eess+math+physics	1
+eess+physics+stat	1
+q-fin+stat	1
+cs+math+physics+q-bio	1
+eess+q-bio+stat	1
+
+

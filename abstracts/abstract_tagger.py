@@ -38,8 +38,9 @@ def parse_args():
     parser.add_argument("-brnb", "--binary-relevance-naive-bayes", action="store_true", help="Use binary relevance with naive bayes classifier")
     parser.add_argument("-brlr", "--binary-relevance-logistic-regression", action="store_true", help="Use binary relevance with logistic regression classifier")
     parser.add_argument("-mr", "--max-rows", type=int, help="Maximum number of samples to use for training (0 - use entire dataset).")
-    parser.add_argument("-tmdf", "--title-min-df", type=int, default=1, help="Cutoff document frequency for title words")
-    parser.add_argument("-amdf", "--abstract-min-df", type=int, default=2, help="Cutoff document frequency for abstract words")
+    parser.add_argument("-tmdf", "--title-min-df", type=int, default=3, help="Cutoff document frequency for title words")
+    parser.add_argument("-amdf", "--abstract-min-df", type=int, default=5, help="Cutoff document frequency for abstract words")
+    parser.add_argument("-nj", "--n-jobs", type=int, default=1, help="n_jobs parameter for GridSearchCV")
 
     return parser.parse_args()
 
@@ -69,14 +70,14 @@ def load_model(path):
         classifier = model["classifier"]
         category_to_id = model["category_to_id"]
         id_to_category = model["id_to_category"]
-        
+
         return abstract_featurizer, title_featurizer, feature_selection, classifier, category_to_id, id_to_category
 
 
 #
 # Pringing statistics and results
 #
-def output_results(file, tag, accuracy_score, classification_report, category_to_id, classifier_details):
+def output_results(file, tag, accuracy_score, classification_report, classifier_details):
     file.write("#\n")
     file.write("# " + tag + "\n")
     file.write("#\n")
@@ -86,21 +87,16 @@ def output_results(file, tag, accuracy_score, classification_report, category_to
     file.write(classification_report)
     file.write("\n")
 
-    # we want to sort by value - ID
-    category_id_pairs = sorted(category_to_id.items(), key=operator.itemgetter(1))
-    for category, id in category_id_pairs:
-        file.write("%i\t%s\n" % (id, category))
-
     # write classifier parameters
     file.write("\n")
     file.write("classifier details:\n")
     file.write(classifier_details + "\n")
 
-def output_summary(file, tag, best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, category_to_id, best_classifier_details):
+def output_summary(file, tag, best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, best_classifier_details):
     file.write("best_feature_count = %d\n" % best_feature_count)
     file.write("best_feature_ratio = %.1f%%\n" % best_feature_ratio)
     file.write("\n")
-    output_results(file, tag, best_accuracy_score, best_classification_report, category_to_id, best_classifier_details)
+    output_results(file, tag, best_accuracy_score, best_classification_report, best_classifier_details)
 
 def get_feature_names(feature_prefix, vectorizer):
     feature_names = vectorizer.get_feature_names()
@@ -113,7 +109,6 @@ def fit_chi_square_feature_selection(x_train, y_train, feature_names, feature_co
     x_train = ch2.fit(x_train, y_train)
     feature_names = [feature_names[i] for i in ch2.get_support(indices=True)]
     feature_names = np.asarray(feature_names)
-    print(feature_names)
     return ch2, feature_names
 
 
@@ -163,17 +158,17 @@ if __name__ == "__main__":
     if not os.path.exists(args.output):
         os.makedirs(args.output)
 
-    print("Reading train set: %s" % args.train_data)
+    print("Reading train set: %s" % args.train_data, flush=True)
     df_train = pd.read_csv(args.train_data, nrows=args.max_rows)
     df_train.head()
 
-    print("Reading test set: %s" % args.test_data)
+    print("Reading test set: %s" % args.test_data, flush=True)
     df_test = pd.read_csv(args.test_data, nrows=args.max_rows)
     df_test.head()
 
-    print("Normalize training abstracts")
+    print("Normalize training abstracts", flush=True)
     normalize_abstracts(df_train)
-    print("Normalize test abstracts")
+    print("Normalize test abstracts", flush=True)
     normalize_abstracts(df_test)
 
     # main categories is list serialized as string, convert it back
@@ -195,12 +190,15 @@ if __name__ == "__main__":
     for n in df_train.main_categories:
         unique_categories.update(n)
     category_to_id = dict([(j,i) for i, j in enumerate(sorted(unique_categories))])
+    id_to_category = [0] * len(category_to_id)
+    for cat, id in category_to_id.items():
+        id_to_category[id] = cat
 
-    print("Generate one hot outputs in training set")
+    print("Generate one hot outputs in training set", flush=True)
     y_df_train = df_train['main_categories'].apply(one_hot_encoder)
     y_df_train = pd.DataFrame(y_df_train.values.tolist(), columns=range(0, len(category_to_id)))
 
-    print("Generate one hot outputs in test set")
+    print("Generate one hot outputs in test set", flush=True)
     y_df_test = df_test['main_categories'].apply(one_hot_encoder)
     y_df_test = pd.DataFrame(y_df_test.values.tolist(), columns=range(0, len(category_to_id)))
 
@@ -216,10 +214,10 @@ if __name__ == "__main__":
     x_test = np.vstack((x1_test, x2_test))
     x_test = x_test.T
 
-    print("%d documents in train set" %len(x_train))
-    print("%d documents in test set" % len(x_test))
+    print("%d documents in train set" %len(x_train), flush=True)
+    print("%d documents in test set" % len(x_test), flush=True)
 
-    print("Extracting features")
+    print("Extracting features", flush=True)
 
     from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -249,8 +247,7 @@ if __name__ == "__main__":
     x_train = scipy.sparse.hstack(tuple(train_feature_groups))
     x_test = scipy.sparse.hstack(tuple(test_feature_groups))
 
-    print("Total feature count: %d" % len(feature_names))
-    sys.stdout.flush()
+    print("Total feature count: %d" % len(feature_names), flush=True)
 
     best_accuracy_score = 0.0
     best_feature_ratio = 0.0
@@ -267,7 +264,7 @@ if __name__ == "__main__":
         ch2, feature_names_sel = fit_chi_square_feature_selection(x_train, y_train, feature_names, feature_count)
         x_train_sel = ch2.transform(x_train)
         x_test_sel = ch2.transform(x_test)
-        
+
 
         classifier_details = "NA"
         if args.binary_relevance_naive_bayes:
@@ -279,13 +276,13 @@ if __name__ == "__main__":
             print("Train binary relevance logistic regression tagger")
             parameters = [
                 {
-                    'classifier': [LogisticRegression()],
+                    'classifier': [LogisticRegression(solver='liblinear')],
                     'classifier__C': args.classifier_C,
                 }
             ]
             # iid = True : use average across folds as selection criteria
             # refit = True : fit model on all data after getting best parameters with CV
-            gridSearch = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy', iid=True, refit=True, n_jobs=-1)
+            gridSearch = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy', iid=True, refit=True, n_jobs=args.n_jobs)
             gridSearch.fit(x_train_sel, y_train)
             classifier_details = "best_params = " + str(gridSearch.best_params_)
             classifier = gridSearch.best_estimator_
@@ -300,25 +297,25 @@ if __name__ == "__main__":
         predictions = predictions.todense()
         # score evaluation results
         accuracy_score = metrics.accuracy_score(y_test, predictions)
-        classification_report = metrics.classification_report(y_test, predictions)
-        
+        classification_report = metrics.classification_report(y_test, predictions, target_names=id_to_category)
+
         # evaluate training set with the model
         predictions = classifier.predict(x_train_sel.astype(float))
         predictions = predictions.todense()
         # score evaluation results
         train_accuracy_score = metrics.accuracy_score(y_train, predictions)
-        train_classification_report = metrics.classification_report(y_train, predictions)       
+        train_classification_report = metrics.classification_report(y_train, predictions, target_names=id_to_category)
 
         # output scores to stdout
-        output_results(sys.stdout, "TEST SET", accuracy_score, classification_report, category_to_id, classifier_details)
-        output_results(sys.stdout, "TRAINING SET", train_accuracy_score, train_classification_report, category_to_id, classifier_details)
+        output_results(sys.stdout, "TEST SET", accuracy_score, classification_report, classifier_details)
+        output_results(sys.stdout, "TRAINING SET", train_accuracy_score, train_classification_report, classifier_details)
         print()
 
         # output scores to file
         with open(os.path.join(args.output, "results_%d.txt" % int(100 * feature_ratio)), 'w') as results_file:
-            output_results(results_file, "TEST SET", train_accuracy_score, classification_report, category_to_id, classifier_details)
-            output_results(results_file, "TRAINING SET", accuracy_score, train_classification_report, category_to_id, classifier_details)
-        
+            output_results(results_file, "TEST SET", accuracy_score, classification_report, classifier_details)
+            output_results(results_file, "TRAINING SET", train_accuracy_score, train_classification_report, classifier_details)
+
         # update best results if needed
         if (accuracy_score > best_accuracy_score):
             best_accuracy_score = accuracy_score
@@ -328,19 +325,19 @@ if __name__ == "__main__":
             best_classifier_details = classifier_details
             best_train_accuracy_score = train_accuracy_score
             best_train_classification_report = train_classification_report
-            
+
         # store current model
         model_path = os.path.join(args.output, "model_%d.pickle" % int(100 * feature_ratio))
         store_model(model_path, vec_abstract, vec_title, ch2, classifier, category_to_id)
-        
+
         sys.stdout.flush()
 
     print()
     print()
     print("=== summary ===")
-    output_summary(sys.stdout, "TEST SET", best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, category_to_id, best_classifier_details)
-    output_summary(sys.stdout, "TRAINING SET", best_feature_count, best_feature_ratio, best_train_accuracy_score, best_train_classification_report, category_to_id, best_classifier_details)
+    output_summary(sys.stdout, "TEST SET", best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, best_classifier_details)
+    output_summary(sys.stdout, "TRAINING SET", best_feature_count, best_feature_ratio, best_train_accuracy_score, best_train_classification_report, best_classifier_details)
 
     with open(os.path.join(args.output, "summary.txt"), 'w') as summary_file:
-        output_summary(summary_file, "TEST SET", best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, category_to_id, best_classifier_details)
-        output_summary(summary_file, "TRAINING SET", best_feature_count, best_feature_ratio, best_train_accuracy_score, best_train_classification_report, category_to_id, best_classifier_details)
+        output_summary(summary_file, "TEST SET", best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, best_classifier_details)
+        output_summary(summary_file, "TRAINING SET", best_feature_count, best_feature_ratio, best_train_accuracy_score, best_train_classification_report, best_classifier_details)
