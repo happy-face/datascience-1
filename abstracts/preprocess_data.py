@@ -35,7 +35,7 @@ def generate_main_categories(df):
     # Handling of physics sub-categories'
     def physics_tags(tags):
         physics_categories = ['astro-ph', 'cond-mat', 'gr-qc', 'hep-ex', 'hep-lat', 'hep-ph', 'hep-th', 'math-ph', 'nlin',
-                              'nucl-ex', 'nucl-th', 'physics', 'quant-ph']
+                              'nucl-ex', 'nucl-th', 'physics', 'quant-ph', 'chao-dyn']
         result = ['physics' if item in physics_categories else item for item in tags]
         return list(set(result))
 
@@ -144,15 +144,13 @@ def randomize_dataset(df):
     return df_new
 
 
-#
-# text preprocessing
-#   - generate main categories from subcategories
-#   - output set statistics
-#   - randomize data set
-#
-#
-#
-#
+def supported_categories(categories):
+    supported = set(["physics", "stat", "cs", "math", "q-bio", "q-fin", "eess"])
+    for cat in categories:
+        if cat not in supported:
+            return False
+    return True
+
 if __name__ == "__main__":
     args = parse_args()
 
@@ -166,10 +164,17 @@ if __name__ == "__main__":
     df = pd.read_csv(args.input, nrows=args.max_rows)
     df.head()
 
+    # remove duplicates
+    df = df.drop_duplicates('abstract')
+    df = df.drop_duplicates('title')
+
     # split subcategories string into list of subcategories
     df['subcategories'] = df['subcategories'].str.split()
-
     generate_main_categories(df)
+
+    # keep only supported categories
+    df = df[df.apply(lambda x: supported_categories(x['main_categories']), axis=1)]
+
     output_dataset_stats(df, args.output)
 
     totalText = ''
@@ -183,6 +188,21 @@ if __name__ == "__main__":
     plt.savefig(os.path.join(args.output, 'word_cloud.png'))
 
 
-    df_rand = randomize_dataset(df)
+    df = randomize_dataset(df)
+
     out_file_name = os.path.splitext(os.path.basename(args.input))[0]
-    df_rand.to_csv(os.path.join(args.output, out_file_name + '_processed.csv'))
+    df.to_csv(os.path.join(args.output, out_file_name + '_processed.csv'))
+
+
+    print()
+    print("Category statistics:")
+    cat2count = {}
+    for el in df.main_categories:
+        for cat in el:
+            if cat not in cat2count:
+                cat2count[cat] = 0
+            cat2count[cat] += 1
+
+    total = sum(cat2count.values())
+    for cat, count in cat2count.items():
+        print("%s\t%d\t%.1f%%" % (cat, count, 100 * float(count) / total))
