@@ -157,17 +157,17 @@ if __name__ == "__main__":
     if not os.path.exists(args.output):
         os.makedirs(args.output)
 
-    print("Reading train set: %s" % args.train_data)
+    print("Reading train set: %s" % args.train_data, flush=True)
     df_train = pd.read_csv(args.train_data, nrows=args.max_rows)
     df_train.head()
 
-    print("Reading test set: %s" % args.test_data)
+    print("Reading test set: %s" % args.test_data, flush=True)
     df_test = pd.read_csv(args.test_data, nrows=args.max_rows)
     df_test.head()
 
-    print("Normalize training abstracts")
+    print("Normalize training abstracts", flush=True)
     normalize_abstracts(df_train)
-    print("Normalize test abstracts")
+    print("Normalize test abstracts", flush=True)
     normalize_abstracts(df_test)
 
     # main categories is list serialized as string, convert it back
@@ -193,11 +193,11 @@ if __name__ == "__main__":
     for cat, id in category_to_id.items():
         id_to_category[id] = cat
 
-    print("Generate one hot outputs in training set")
+    print("Generate one hot outputs in training set", flush=True)
     y_df_train = df_train['main_categories'].apply(one_hot_encoder)
     y_df_train = pd.DataFrame(y_df_train.values.tolist(), columns=range(0, len(category_to_id)))
 
-    print("Generate one hot outputs in test set")
+    print("Generate one hot outputs in test set", flush=True)
     y_df_test = df_test['main_categories'].apply(one_hot_encoder)
     y_df_test = pd.DataFrame(y_df_test.values.tolist(), columns=range(0, len(category_to_id)))
 
@@ -213,10 +213,10 @@ if __name__ == "__main__":
     x_test = np.vstack((x1_test, x2_test))
     x_test = x_test.T
 
-    print("%d documents in train set" %len(x_train))
-    print("%d documents in test set" % len(x_test))
+    print("%d documents in train set" %len(x_train), flush=True)
+    print("%d documents in test set" % len(x_test), flush=True)
 
-    print("Extracting features")
+    print("Extracting features", flush=True)
 
     from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -246,8 +246,7 @@ if __name__ == "__main__":
     x_train = scipy.sparse.hstack(tuple(train_feature_groups))
     x_test = scipy.sparse.hstack(tuple(test_feature_groups))
 
-    print("Total feature count: %d" % len(feature_names))
-    sys.stdout.flush()
+    print("Total feature count: %d" % len(feature_names), flush=True)
 
     best_accuracy_score = 0.0
     best_feature_ratio = 0.0
