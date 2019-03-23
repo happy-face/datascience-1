@@ -69,7 +69,7 @@ def load_model(path):
         classifier = model["classifier"]
         category_to_id = model["category_to_id"]
         id_to_category = model["id_to_category"]
-        
+
         return abstract_featurizer, title_featurizer, feature_selection, classifier, category_to_id, id_to_category
 
 
@@ -267,7 +267,7 @@ if __name__ == "__main__":
         ch2, feature_names_sel = fit_chi_square_feature_selection(x_train, y_train, feature_names, feature_count)
         x_train_sel = ch2.transform(x_train)
         x_test_sel = ch2.transform(x_test)
-        
+
 
         classifier_details = "NA"
         if args.binary_relevance_naive_bayes:
@@ -279,7 +279,7 @@ if __name__ == "__main__":
             print("Train binary relevance logistic regression tagger")
             parameters = [
                 {
-                    'classifier': [LogisticRegression()],
+                    'classifier': [LogisticRegression(solver='liblinear')],
                     'classifier__C': args.classifier_C,
                 }
             ]
@@ -301,13 +301,13 @@ if __name__ == "__main__":
         # score evaluation results
         accuracy_score = metrics.accuracy_score(y_test, predictions)
         classification_report = metrics.classification_report(y_test, predictions)
-        
+
         # evaluate training set with the model
         predictions = classifier.predict(x_train_sel.astype(float))
         predictions = predictions.todense()
         # score evaluation results
         train_accuracy_score = metrics.accuracy_score(y_train, predictions)
-        train_classification_report = metrics.classification_report(y_train, predictions)       
+        train_classification_report = metrics.classification_report(y_train, predictions)
 
         # output scores to stdout
         output_results(sys.stdout, "TEST SET", accuracy_score, classification_report, category_to_id, classifier_details)
@@ -318,7 +318,7 @@ if __name__ == "__main__":
         with open(os.path.join(args.output, "results_%d.txt" % int(100 * feature_ratio)), 'w') as results_file:
             output_results(results_file, "TEST SET", train_accuracy_score, classification_report, category_to_id, classifier_details)
             output_results(results_file, "TRAINING SET", accuracy_score, train_classification_report, category_to_id, classifier_details)
-        
+
         # update best results if needed
         if (accuracy_score > best_accuracy_score):
             best_accuracy_score = accuracy_score
@@ -328,11 +328,11 @@ if __name__ == "__main__":
             best_classifier_details = classifier_details
             best_train_accuracy_score = train_accuracy_score
             best_train_classification_report = train_classification_report
-            
+
         # store current model
         model_path = os.path.join(args.output, "model_%d.pickle" % int(100 * feature_ratio))
         store_model(model_path, vec_abstract, vec_title, ch2, classifier, category_to_id)
-        
+
         sys.stdout.flush()
 
     print()
