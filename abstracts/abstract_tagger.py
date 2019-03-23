@@ -40,6 +40,7 @@ def parse_args():
     parser.add_argument("-mr", "--max-rows", type=int, help="Maximum number of samples to use for training (0 - use entire dataset).")
     parser.add_argument("-tmdf", "--title-min-df", type=int, default=3, help="Cutoff document frequency for title words")
     parser.add_argument("-amdf", "--abstract-min-df", type=int, default=5, help="Cutoff document frequency for abstract words")
+    parser.add_argument("-nj", "--n-jobs", type=int, default=1, help="n_jobs parameter for GridSearchCV")
 
     return parser.parse_args()
 
@@ -281,7 +282,7 @@ if __name__ == "__main__":
             ]
             # iid = True : use average across folds as selection criteria
             # refit = True : fit model on all data after getting best parameters with CV
-            gridSearch = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy', iid=True, refit=True, n_jobs=-1)
+            gridSearch = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy', iid=True, refit=True, n_jobs=args.n_jobs)
             gridSearch.fit(x_train_sel, y_train)
             classifier_details = "best_params = " + str(gridSearch.best_params_)
             classifier = gridSearch.best_estimator_
