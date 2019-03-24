@@ -313,7 +313,10 @@ if __name__ == "__main__":
             x_train_ids = range(0, np.shape(x_train_sel)[0])
             x_validation_ids = range(np.shape(x_train_sel)[0], np.shape(x_train_sel)[0] + np.shape(x_validation_sel)[0])
             gridsearch_cv = [(list(x_train_ids), list(x_validation_ids))]
+
+            # we shouldnt refit after GridSEarchCV because we shouldn't include validation data into training
             gridsearch_refit = False
+
         else:
             x_gridsearch = x_train_sel
             y_gridsearch = y_train
@@ -389,8 +392,9 @@ if __name__ == "__main__":
             best_classifier_details = classifier_details
             best_train_accuracy_score = train_accuracy_score
             best_train_classification_report = train_classification_report
-            best_validation_accuracy_score = validation_accuracy_score
-            best_validation_classification_report = validation_classification_report
+            if x_validation is not None:
+                best_validation_accuracy_score = validation_accuracy_score
+                best_validation_classification_report = validation_classification_report
 
         # store current model
         model_path = os.path.join(args.output, "model_%d.pickle" % int(100 * feature_ratio))
