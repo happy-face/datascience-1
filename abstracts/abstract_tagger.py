@@ -14,11 +14,14 @@ import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from skmultilearn.problem_transform import BinaryRelevance
+from skmultilearn.problem_transform import ClassifierChain
+from skmultilearn.problem_transform import LabelPowerset
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
+from skmultilearn.adapt import MLkNN
 
 import sklearn.metrics as metrics
 
@@ -40,6 +43,9 @@ def parse_args():
     parser.add_argument("-brlr", "--binary-relevance-logistic-regression", action="store_true", help="Use binary relevance with logistic regression classifier")
     parser.add_argument("-brsvml", "--binary-relevance-svm-linear", action="store_true", help="Use binary relevance with SVM classifier with linear kernel")
     parser.add_argument("-brsvmr", "--binary-relevance-svm-rbf", action="store_true", help="Use binary relevance with SVM classifier with rbf kernel")
+    parser.add_argument("-cclr", "--classifier-chain-logistic-regression", action="store_true", help="Use chain of logistic regression classifiers")
+    parser.add_argument("-lplr", "--label-powerset-logistic-regression", action="store_true", help="Use label powerset logistic regression classifier")
+    parser.add_argument("-mlknn", "--multi-label-knn", action="store_true", help="Use multi label KNN classifier")
     parser.add_argument("-mr", "--max-rows", type=int, help="Maximum number of samples to use for training (0 - use entire dataset).")
     parser.add_argument("-tmdf", "--title-min-df", type=int, default=3, help="Cutoff document frequency for title words")
     parser.add_argument("-amdf", "--abstract-min-df", type=int, default=5, help="Cutoff document frequency for abstract words")
@@ -371,6 +377,53 @@ if __name__ == "__main__":
             else:
                 classifier = BinaryRelevance(SVC(kernel=svm_kernel, C = args.classifier_C[0]))
                 classifier.fit(x_train_sel, y_train)
+
+        elif args.classifier_chain_logistic_regression:
+            print("Train classifier chain logistic regression tagger")
+            if len(args.classifier_C) > 1:
+                parameters = [
+                    {
+                        'classifier': [LogisticRegression(solver='liblinear')],
+                        'classifier__C': args.classifier_C,
+                    }
+                ]
+                # iid = True : use average across folds as selection criteria
+                # refit = True : fit model on all data after getting best parameters with CV
+                gridSearch = GridSearchCV(ClassifierChain(), parameters, scoring='accuracy', iid=True, refit=gridsearch_refit, n_jobs=args.n_jobs, cv = gridsearch_cv)
+                gridSearch.fit(x_gridsearch, y_gridsearch)
+                classifier_details = "best_params = " + str(gridSearch.best_params_)
+                classifier = gridSearch.best_estimator_
+            else:
+                classifier = ClassifierChain(LogisticRegression(solver='liblinear', C = args.classifier_C[0]))
+                classifier.fit(x_train_sel, y_train)
+
+        elif args.label_powerset_logistic_regression:
+            print("Train label powerset logistic regression tagger")
+            if len(args.classifier_C) > 1:
+                parameters = [
+                    {
+                        'classifier': [LogisticRegression(solver='liblinear')],
+                        'classifier__C': args.classifier_C,
+                    }
+                ]
+                # iid = True : use average across folds as selection criteria
+                # refit = True : fit model on all data after getting best parameters with CV
+                gridSearch = GridSearchCV(LabelPowerset(), parameters, scoring='accuracy', iid=True, refit=gridsearch_refit, n_jobs=args.n_jobs, cv = gridsearch_cv)
+                gridSearch.fit(x_gridsearch, y_gridsearch)
+                classifier_details = "best_params = " + str(gridSearch.best_params_)
+                classifier = gridSearch.best_estimator_
+            else:
+                classifier = LabelPowerset(LogisticRegression(solver='liblinear', C = args.classifier_C[0]))
+                classifier.fit(x_train_sel, y_train)
+
+
+        elif args.multi_label_knn:
+            print("Train multi label KNN classifier")
+            parameters = {'k': range(1,3), 's': [0.5, 0.7, 1.0]}
+            gridSearch = GridSearchCV(MLkNN(), parameters, scoring='accuracy', iid=True, refit=gridsearch_refit, n_jobs=args.n_jobs, cv = gridsearch_cv)
+            gridSearch.fit(x_gridsearch, y_gridsearch)
+            classifier_details = "best_params = " + str(gridSearch.best_params_)
+            classifier = gridSearch.best_estimator_
 
         else:
             print("ERROR: specify classification model")
