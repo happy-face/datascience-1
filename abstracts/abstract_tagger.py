@@ -41,6 +41,7 @@ def parse_args():
     parser.add_argument("-tmdf", "--title-min-df", type=int, default=3, help="Cutoff document frequency for title words")
     parser.add_argument("-amdf", "--abstract-min-df", type=int, default=5, help="Cutoff document frequency for abstract words")
     parser.add_argument("-nj", "--n-jobs", type=int, default=1, help="n_jobs parameter for GridSearchCV")
+    parser.add_argument("-vd", "--validation-data", help="Validation dataset that will be used to select regularization parameters. If not specified regularization parameters will be selected using cross validation")
 
     return parser.parse_args()
 
@@ -166,14 +167,24 @@ if __name__ == "__main__":
     df_test = pd.read_csv(args.test_data, nrows=args.max_rows)
     df_test.head()
 
+    df_validation = None
+    if args.validation_data:
+        print("Reading validation set: %s" % args.validation_data, flush=True)
+        df_validation = pd.read_csv(args.train_data, nrows=args.max_rows)
+
     print("Normalize training abstracts", flush=True)
     normalize_abstracts(df_train)
     print("Normalize test abstracts", flush=True)
     normalize_abstracts(df_test)
+    if df_validation is not None:
+        print("Normalize validation abstracts")
+        normalize_abstracts(df_validation)
 
     # main categories is list serialized as string, convert it back
     df_train['main_categories'] = df_train['main_categories'].apply(eval)
     df_test['main_categories'] = df_test['main_categories'].apply(eval)
+    if df_validation is not None:
+        df_validation['main_categories'] = df_validation['main_categories'].apply(eval)
 
     #apply one-hot encoding for Binary Relevance
     def one_hot_encoder(tags):
@@ -202,6 +213,11 @@ if __name__ == "__main__":
     y_df_test = df_test['main_categories'].apply(one_hot_encoder)
     y_df_test = pd.DataFrame(y_df_test.values.tolist(), columns=range(0, len(category_to_id)))
 
+    if df_validation is not None:
+        print("Generate one hot outputs in validation test set", flush=True)
+        y_df_validation = df_validation['main_categories'].apply(one_hot_encoder)
+        y_df_validation = pd.DataFrame(y_df_validation.values.tolist(), columns=range(0, len(category_to_id)))
+
     x1_train = df_train['title'].values
     x2_train = df_train['abstract'].values
     y_train = y_df_train.values
@@ -214,8 +230,18 @@ if __name__ == "__main__":
     x_test = np.vstack((x1_test, x2_test))
     x_test = x_test.T
 
+    if df_validation is not None:
+        x1_validation = df_validation['title'].values
+        x2_validation = df_validation['abstract'].values
+        y_validation = y_df_validation.values
+        x_validation = np.vstack((x1_validation, x2_validation))
+        x_validation = x_validation.T
+
     print("%d documents in train set" %len(x_train), flush=True)
     print("%d documents in test set" % len(x_test), flush=True)
+    if df_validation is not None:
+        print("%d documents in validation set" % len(x_validation), flush=True)
+
 
     print("Extracting features", flush=True)
 
@@ -224,6 +250,7 @@ if __name__ == "__main__":
     feature_names = []
     train_feature_groups = []
     test_feature_groups = []
+    validation_feature_groups = []
 
     # title features
     vec_title = None
@@ -232,6 +259,8 @@ if __name__ == "__main__":
         train_feature_groups.append(vec_title.fit_transform(x_train[:,0]))
         feature_names += get_feature_names("tit-", vec_title)
         test_feature_groups.append(vec_title.transform(x_test[:,0]))
+        if df_validation is not None:
+            validation_feature_groups.append(vec_title.transform(x_validation[:,0]))
 
     # abstract features
     vec_abstract = None
@@ -240,12 +269,19 @@ if __name__ == "__main__":
         train_feature_groups.append(vec_abstract.fit_transform(x_train[:,1]))
         feature_names += get_feature_names("abs-", vec_abstract)
         test_feature_groups.append(vec_abstract.transform(x_test[:,1]))
+        if df_validation is not None:
+            validation_feature_groups.append(vec_abstract.transform(x_validation[:,1]))
 
     assert len(train_feature_groups) > 0
     assert len(test_feature_groups) > 0
+    if df_validation is not None:
+        assert len(validation_feature_groups) > 0
 
     x_train = scipy.sparse.hstack(tuple(train_feature_groups))
     x_test = scipy.sparse.hstack(tuple(test_feature_groups))
+    x_validation = None
+    if df_validation is not None:
+        x_validation = scipy.sparse.hstack(tuple(validation_feature_groups))
 
     print("Total feature count: %d" % len(feature_names), flush=True)
 
@@ -264,7 +300,21 @@ if __name__ == "__main__":
         ch2, feature_names_sel = fit_chi_square_feature_selection(x_train, y_train, feature_names, feature_count)
         x_train_sel = ch2.transform(x_train)
         x_test_sel = ch2.transform(x_test)
+        if x_validation is not None:
+            x_validation_sel = ch2.transform(x_validation)
 
+        gridsearch_cv = None
+        gridsearch_refit = True
+        if x_validation is not None:
+            x_gridsearch = scipy.sparse.vstack((x_train_sel, x_validation_sel))
+            y_gridsearch = scipy.sparse.vstack([scipy.sparse.csr_matrix(y_train), scipy.sparse.csr_matrix(y_validation)])
+            x_train_ids = range(0, np.shape(x_train_sel)[0])
+            x_validation_ids = range(np.shape(x_train_sel)[0], np.shape(x_train_sel)[0] + np.shape(x_validation_sel)[0])
+            gridsearch_cv = [(list(x_train_ids), list(x_validation_ids))]
+            gridsearch_refit = False
+        else:
+            x_gridsearch = x_train_sel
+            y_gridsearch = y_train
 
         classifier_details = "NA"
         if args.binary_relevance_naive_bayes:
@@ -282,8 +332,8 @@ if __name__ == "__main__":
             ]
             # iid = True : use average across folds as selection criteria
             # refit = True : fit model on all data after getting best parameters with CV
-            gridSearch = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy', iid=True, refit=True, n_jobs=args.n_jobs)
-            gridSearch.fit(x_train_sel, y_train)
+            gridSearch = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy', iid=True, refit=True, n_jobs=args.n_jobs, cv = gridsearch_cv)
+            gridSearch.fit(x_gridsearch, y_gridsearch)
             classifier_details = "best_params = " + str(gridSearch.best_params_)
             classifier = gridSearch.best_estimator_
 
