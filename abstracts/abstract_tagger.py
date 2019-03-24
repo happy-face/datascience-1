@@ -292,6 +292,8 @@ if __name__ == "__main__":
     best_classifier_detals = ""
     best_train_accuracy_score =0.0
     best_train_classification_report = ""
+    best_validation_accuracy_score = 0.0
+    best_validation_classification_report = ""
 
     for feature_ratio in args.feature_selection_ratio:
         # selecting the best k features from the data set
@@ -356,15 +358,27 @@ if __name__ == "__main__":
         train_accuracy_score = metrics.accuracy_score(y_train, predictions)
         train_classification_report = metrics.classification_report(y_train, predictions, target_names=id_to_category)
 
+        if x_validation is not None:
+            # evaluate training set with the model
+            predictions = classifier.predict(x_validation_sel.astype(float))
+            predictions = predictions.todense()
+            # score evaluation results
+            validation_accuracy_score = metrics.accuracy_score(y_validation, predictions)
+            validation_classification_report = metrics.classification_report(y_validation, predictions, target_names=id_to_category)
+
         # output scores to stdout
         output_results(sys.stdout, "TEST SET", accuracy_score, classification_report, classifier_details)
         output_results(sys.stdout, "TRAINING SET", train_accuracy_score, train_classification_report, classifier_details)
+        if x_validation is not None:
+            output_results(sys.stdout, "VALIDATION SET", validation_accuracy_score, validation_classification_report, classifier_details)
         print()
 
         # output scores to file
         with open(os.path.join(args.output, "results_%d.txt" % int(100 * feature_ratio)), 'w') as results_file:
             output_results(results_file, "TEST SET", accuracy_score, classification_report, classifier_details)
             output_results(results_file, "TRAINING SET", train_accuracy_score, train_classification_report, classifier_details)
+            if x_validation is not None:
+                output_results(results_file, "VALIDATION SET", validation_accuracy_score, validation_classification_report, classifier_details)
 
         # update best results if needed
         if (accuracy_score > best_accuracy_score):
@@ -375,6 +389,8 @@ if __name__ == "__main__":
             best_classifier_details = classifier_details
             best_train_accuracy_score = train_accuracy_score
             best_train_classification_report = train_classification_report
+            best_validation_accuracy_score = validation_accuracy_score
+            best_validation_classification_report = validation_classification_report
 
         # store current model
         model_path = os.path.join(args.output, "model_%d.pickle" % int(100 * feature_ratio))
@@ -387,7 +403,11 @@ if __name__ == "__main__":
     print("=== summary ===")
     output_summary(sys.stdout, "TEST SET", best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, best_classifier_details)
     output_summary(sys.stdout, "TRAINING SET", best_feature_count, best_feature_ratio, best_train_accuracy_score, best_train_classification_report, best_classifier_details)
+    if x_validation is not None:
+        output_summary(sys.stdout, "VALIDATION SET", best_feature_count, best_feature_ratio, best_validation_accuracy_score, best_validation_classification_report, best_classifier_details)
 
     with open(os.path.join(args.output, "summary.txt"), 'w') as summary_file:
         output_summary(summary_file, "TEST SET", best_feature_count, best_feature_ratio, best_accuracy_score, best_classification_report, best_classifier_details)
         output_summary(summary_file, "TRAINING SET", best_feature_count, best_feature_ratio, best_train_accuracy_score, best_train_classification_report, best_classifier_details)
+        if x_validation is not None:
+            output_summary(summary_file, "VALIDATION SET", best_feature_count, best_feature_ratio, best_validation_accuracy_score, best_validation_classification_report, best_classifier_details)
