@@ -16,6 +16,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from skmultilearn.problem_transform import BinaryRelevance
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 
@@ -37,6 +38,8 @@ def parse_args():
     parser.add_argument("-cc", "--classifier-C", nargs='+', type=float, default = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000], help="Regularization factors that will be passed to GridSearchCV sklearn.")
     parser.add_argument("-brnb", "--binary-relevance-naive-bayes", action="store_true", help="Use binary relevance with naive bayes classifier")
     parser.add_argument("-brlr", "--binary-relevance-logistic-regression", action="store_true", help="Use binary relevance with logistic regression classifier")
+    parser.add_argument("-brsvml", "--binary-relevance-svm-linear", action="store_true", help="Use binary relevance with SVM classifier with linear kernel")
+    parser.add_argument("-brsvmr", "--binary-relevance-svm-rbf", action="store_true", help="Use binary relevance with SVM classifier with rbf kernel")
     parser.add_argument("-mr", "--max-rows", type=int, help="Maximum number of samples to use for training (0 - use entire dataset).")
     parser.add_argument("-tmdf", "--title-min-df", type=int, default=3, help="Cutoff document frequency for title words")
     parser.add_argument("-amdf", "--abstract-min-df", type=int, default=5, help="Cutoff document frequency for abstract words")
@@ -329,18 +332,45 @@ if __name__ == "__main__":
 
         elif args.binary_relevance_logistic_regression:
             print("Train binary relevance logistic regression tagger")
-            parameters = [
-                {
-                    'classifier': [LogisticRegression(solver='liblinear')],
-                    'classifier__C': args.classifier_C,
-                }
-            ]
-            # iid = True : use average across folds as selection criteria
-            # refit = True : fit model on all data after getting best parameters with CV
-            gridSearch = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy', iid=True, refit=True, n_jobs=args.n_jobs, cv = gridsearch_cv)
-            gridSearch.fit(x_gridsearch, y_gridsearch)
-            classifier_details = "best_params = " + str(gridSearch.best_params_)
-            classifier = gridSearch.best_estimator_
+            if len(args.classifier_C) > 1:
+                parameters = [
+                    {
+                        'classifier': [LogisticRegression(solver='liblinear')],
+                        'classifier__C': args.classifier_C,
+                    }
+                ]
+                # iid = True : use average across folds as selection criteria
+                # refit = True : fit model on all data after getting best parameters with CV
+                gridSearch = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy', iid=True, refit=gridsearch_refit, n_jobs=args.n_jobs, cv = gridsearch_cv)
+                gridSearch.fit(x_gridsearch, y_gridsearch)
+                classifier_details = "best_params = " + str(gridSearch.best_params_)
+                classifier = gridSearch.best_estimator_
+            else:
+                classifier = BinaryRelevance(LogisticRegression(solver='liblinear', C = args.classifier_C[0]))
+                classifier.fit(x_train_sel, y_train)
+
+        elif args.binary_relevance_svm_linear or args.binary_relevance_svm_rbf:
+            print("Train binary relevance SVM regression tagger")
+            svm_kernel = 'linear'
+            if args.binary_relevance_svm_rbf:
+                svm_kernel = 'rbf'
+
+            if len(args.classifier_C) > 1:
+                parameters = [
+                    {
+                        'classifier': [SVC(kernel=svm_kernel)],
+                        'classifier__C': args.classifier_C,
+                    }
+                ]
+                # iid = True : use average across folds as selection criteria
+                # refit = True : fit model on all data after getting best parameters with CV
+                gridSearch = GridSearchCV(BinaryRelevance(), parameters, scoring='accuracy', iid=True, refit=gridsearch_refit, n_jobs=args.n_jobs, cv = gridsearch_cv)
+                gridSearch.fit(x_gridsearch, y_gridsearch)
+                classifier_details = "best_params = " + str(gridSearch.best_params_)
+                classifier = gridSearch.best_estimator_
+            else:
+                classifier = BinaryRelevance(SVC(kernel=svm_kernel, C = args.classifier_C[0]))
+                classifier.fit(x_train_sel, y_train)
 
         else:
             print("ERROR: specify classification model")
