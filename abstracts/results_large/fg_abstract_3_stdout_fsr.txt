@@ -1,0 +1,367 @@
+Reading train set: data\train_jan_june_2018\train_data_jan_june_2018_processed.csv
+Reading test set: data\test\test_data_jan_2018_processed.csv
+Normalize training abstracts
+Normalize test abstracts
+Generate one hot outputs in training set
+Generate one hot outputs in test set
+77349 documents in train set
+19598 documents in test set
+Extracting features
+Total feature count: 96582
+Extracting 10.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.7921726706806818
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.89      0.87      0.88      5134
+        eess       0.64      0.18      0.28       413
+        math       0.91      0.87      0.89      6255
+     physics       0.96      0.93      0.95      9568
+       q-bio       0.72      0.40      0.52       350
+       q-fin       0.81      0.51      0.63       131
+        stat       0.79      0.56      0.65      1837
+
+   micro avg       0.92      0.85      0.88     23688
+   macro avg       0.82      0.62      0.69     23688
+weighted avg       0.91      0.85      0.87     23688
+ samples avg       0.92      0.89      0.89     23688
+
+
+classifier details:
+NA
+#
+# TRAINING SET
+#
+accuracy score: 0.8548009670454693
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.93      0.91      0.92     20329
+        eess       0.91      0.47      0.62      1373
+        math       0.94      0.91      0.92     25658
+     physics       0.97      0.95      0.96     36409
+       q-bio       0.93      0.69      0.79      1506
+       q-fin       0.95      0.74      0.83       570
+        stat       0.89      0.71      0.79      5504
+
+   micro avg       0.95      0.90      0.92     91349
+   macro avg       0.93      0.77      0.83     91349
+weighted avg       0.95      0.90      0.92     91349
+ samples avg       0.95      0.93      0.93     91349
+
+
+classifier details:
+NA
+
+Extracting 20.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.7951831819573426
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.90      0.88      0.89      5134
+        eess       0.62      0.16      0.26       413
+        math       0.91      0.87      0.89      6255
+     physics       0.96      0.93      0.95      9568
+       q-bio       0.73      0.40      0.52       350
+       q-fin       0.81      0.53      0.64       131
+        stat       0.80      0.56      0.66      1837
+
+   micro avg       0.92      0.85      0.88     23688
+   macro avg       0.82      0.62      0.69     23688
+weighted avg       0.91      0.85      0.88     23688
+ samples avg       0.92      0.90      0.90     23688
+
+
+classifier details:
+NA
+#
+# TRAINING SET
+#
+accuracy score: 0.8838123311225743
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.95      0.93      0.94     20329
+        eess       0.96      0.57      0.72      1373
+        math       0.95      0.93      0.94     25658
+     physics       0.98      0.96      0.97     36409
+       q-bio       0.96      0.76      0.85      1506
+       q-fin       0.98      0.80      0.88       570
+        stat       0.93      0.78      0.85      5504
+
+   micro avg       0.96      0.92      0.94     91349
+   macro avg       0.96      0.82      0.88     91349
+weighted avg       0.96      0.92      0.94     91349
+ samples avg       0.96      0.95      0.95     91349
+
+
+classifier details:
+NA
+
+Extracting 30.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.7981936932340035
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.90      0.88      0.89      5134
+        eess       0.65      0.17      0.27       413
+        math       0.91      0.88      0.89      6255
+     physics       0.96      0.93      0.95      9568
+       q-bio       0.76      0.39      0.51       350
+       q-fin       0.82      0.51      0.63       131
+        stat       0.80      0.55      0.66      1837
+
+   micro avg       0.92      0.85      0.89     23688
+   macro avg       0.83      0.62      0.69     23688
+weighted avg       0.91      0.85      0.88     23688
+ samples avg       0.92      0.90      0.90     23688
+
+
+classifier details:
+NA
+#
+# TRAINING SET
+#
+accuracy score: 0.9033859519838653
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.96      0.94      0.95     20329
+        eess       0.98      0.64      0.77      1373
+        math       0.96      0.94      0.95     25658
+     physics       0.99      0.96      0.97     36409
+       q-bio       0.97      0.80      0.88      1506
+       q-fin       0.98      0.83      0.90       570
+        stat       0.95      0.82      0.88      5504
+
+   micro avg       0.97      0.93      0.95     91349
+   macro avg       0.97      0.85      0.90     91349
+weighted avg       0.97      0.93      0.95     91349
+ samples avg       0.97      0.96      0.96     91349
+
+
+classifier details:
+NA
+
+Extracting 40.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.7949280538830493
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.90      0.87      0.89      5134
+        eess       0.63      0.16      0.25       413
+        math       0.91      0.87      0.89      6255
+     physics       0.96      0.94      0.95      9568
+       q-bio       0.75      0.38      0.50       350
+       q-fin       0.83      0.51      0.63       131
+        stat       0.80      0.55      0.66      1837
+
+   micro avg       0.92      0.85      0.88     23688
+   macro avg       0.83      0.61      0.68     23688
+weighted avg       0.91      0.85      0.88     23688
+ samples avg       0.92      0.90      0.90     23688
+
+
+classifier details:
+NA
+#
+# TRAINING SET
+#
+accuracy score: 0.917400354238581
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.97      0.95      0.96     20329
+        eess       0.99      0.69      0.82      1373
+        math       0.97      0.95      0.96     25658
+     physics       0.99      0.97      0.98     36409
+       q-bio       0.98      0.83      0.90      1506
+       q-fin       0.98      0.84      0.90       570
+        stat       0.96      0.85      0.90      5504
+
+   micro avg       0.98      0.94      0.96     91349
+   macro avg       0.98      0.87      0.92     91349
+weighted avg       0.98      0.94      0.96     91349
+ samples avg       0.98      0.96      0.96     91349
+
+
+classifier details:
+NA
+
+Extracting 50.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.7962547198693745
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.90      0.88      0.89      5134
+        eess       0.64      0.15      0.25       413
+        math       0.91      0.87      0.89      6255
+     physics       0.96      0.93      0.95      9568
+       q-bio       0.76      0.38      0.51       350
+       q-fin       0.82      0.49      0.61       131
+        stat       0.81      0.55      0.66      1837
+
+   micro avg       0.92      0.85      0.88     23688
+   macro avg       0.83      0.61      0.68     23688
+weighted avg       0.91      0.85      0.88     23688
+ samples avg       0.92      0.90      0.90     23688
+
+
+classifier details:
+NA
+#
+# TRAINING SET
+#
+accuracy score: 0.9285963619439165
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.97      0.96      0.96     20329
+        eess       0.99      0.73      0.84      1373
+        math       0.97      0.96      0.96     25658
+     physics       0.99      0.97      0.98     36409
+       q-bio       0.98      0.86      0.92      1506
+       q-fin       0.98      0.86      0.92       570
+        stat       0.97      0.86      0.92      5504
+
+   micro avg       0.98      0.95      0.97     91349
+   macro avg       0.98      0.89      0.93     91349
+weighted avg       0.98      0.95      0.97     91349
+ samples avg       0.98      0.97      0.97     91349
+
+
+classifier details:
+NA
+
+Extracting 60.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.797071129707113
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.90      0.88      0.89      5134
+        eess       0.64      0.16      0.25       413
+        math       0.91      0.87      0.89      6255
+     physics       0.96      0.94      0.95      9568
+       q-bio       0.77      0.39      0.51       350
+       q-fin       0.82      0.49      0.61       131
+        stat       0.80      0.56      0.66      1837
+
+   micro avg       0.92      0.85      0.89     23688
+   macro avg       0.83      0.61      0.68     23688
+weighted avg       0.91      0.85      0.88     23688
+ samples avg       0.92      0.90      0.90     23688
+
+
+classifier details:
+NA
+#
+# TRAINING SET
+#
+accuracy score: 0.9375686822066219
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.98      0.96      0.97     20329
+        eess       0.99      0.75      0.86      1373
+        math       0.98      0.96      0.97     25658
+     physics       0.99      0.98      0.98     36409
+       q-bio       0.98      0.88      0.93      1506
+       q-fin       0.98      0.88      0.93       570
+        stat       0.98      0.88      0.93      5504
+
+   micro avg       0.98      0.96      0.97     91349
+   macro avg       0.98      0.90      0.94     91349
+weighted avg       0.98      0.96      0.97     91349
+ samples avg       0.98      0.97      0.97     91349
+
+
+classifier details:
+NA
+
+Extracting 70.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.7968670272476783
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.90      0.88      0.89      5134
+        eess       0.65      0.15      0.25       413
+        math       0.91      0.87      0.89      6255
+     physics       0.96      0.94      0.95      9568
+       q-bio       0.77      0.38      0.51       350
+       q-fin       0.83      0.49      0.62       131
+        stat       0.81      0.55      0.66      1837
+
+   micro avg       0.92      0.85      0.89     23688
+   macro avg       0.83      0.61      0.68     23688
+weighted avg       0.91      0.85      0.88     23688
+ samples avg       0.92      0.90      0.90     23688
+
+
+classifier details:
+NA
+#
+# TRAINING SET
+#
+accuracy score: 0.9446663822415287
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.98      0.97      0.97     20329
+        eess       0.99      0.78      0.87      1373
+        math       0.98      0.97      0.97     25658
+     physics       0.99      0.98      0.99     36409
+       q-bio       0.99      0.89      0.94      1506
+       q-fin       0.98      0.89      0.94       570
+        stat       0.98      0.89      0.93      5504
+
+   micro avg       0.99      0.96      0.97     91349
+   macro avg       0.99      0.91      0.94     91349
+weighted avg       0.99      0.96      0.97     91349
+ samples avg       0.99      0.98      0.98     91349
+
+
+classifier details:
+NA
+
