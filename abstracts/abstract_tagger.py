@@ -170,7 +170,7 @@ if __name__ == "__main__":
     df_validation = None
     if args.validation_data:
         print("Reading validation set: %s" % args.validation_data, flush=True)
-        df_validation = pd.read_csv(args.train_data, nrows=args.max_rows)
+        df_validation = pd.read_csv(args.validation_data, nrows=args.max_rows)
 
     print("Normalize training abstracts", flush=True)
     normalize_abstracts(df_train)
