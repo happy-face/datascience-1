@@ -1,0 +1,54 @@
+#
+# TEST SET
+#
+accuracy score: 0.7569562748438388
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.90      0.85      0.88      1060
+        eess       0.87      0.59      0.70        90
+        math       0.88      0.87      0.88      1371
+     physics       0.94      0.90      0.92      1590
+       q-bio       0.94      0.68      0.79        90
+       q-fin       1.00      0.59      0.75        37
+        stat       0.83      0.74      0.78       327
+
+   micro avg       0.90      0.86      0.88      4565
+   macro avg       0.91      0.75      0.81      4565
+weighted avg       0.90      0.86      0.88      4565
+ samples avg       0.90      0.88      0.88      4565
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+#
+# TRAINING SET
+#
+accuracy score: 0.856595964821521
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.94      0.89      0.92      2532
+        eess       0.99      0.71      0.83       217
+        math       0.94      0.91      0.92      3447
+     physics       0.97      0.94      0.96      4525
+       q-bio       1.00      0.76      0.86       208
+       q-fin       1.00      0.86      0.92        83
+        stat       0.96      0.79      0.87       770
+
+   micro avg       0.96      0.90      0.93     11782
+   macro avg       0.97      0.84      0.90     11782
+weighted avg       0.96      0.90      0.93     11782
+ samples avg       0.95      0.93      0.93     11782
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}

@@ -1,0 +1,643 @@
+Reading train set: data\train_old\train_data_old_set_processed.csv
+Reading test set: data\test_old\test_data_old_set_processed.csv
+Normalize training abstracts
+Normalize test abstracts
+Generate one hot outputs in training set
+Generate one hot outputs in test set
+9665 documents in train set
+3522 documents in test set
+Extracting features
+Total feature count: 26812
+Extracting 10.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.7569562748438388
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.90      0.85      0.88      1060
+        eess       0.87      0.59      0.70        90
+        math       0.88      0.87      0.88      1371
+     physics       0.94      0.90      0.92      1590
+       q-bio       0.94      0.68      0.79        90
+       q-fin       1.00      0.59      0.75        37
+        stat       0.83      0.74      0.78       327
+
+   micro avg       0.90      0.86      0.88      4565
+   macro avg       0.91      0.75      0.81      4565
+weighted avg       0.90      0.86      0.88      4565
+ samples avg       0.90      0.88      0.88      4565
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+#
+# TRAINING SET
+#
+accuracy score: 0.856595964821521
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.94      0.89      0.92      2532
+        eess       0.99      0.71      0.83       217
+        math       0.94      0.91      0.92      3447
+     physics       0.97      0.94      0.96      4525
+       q-bio       1.00      0.76      0.86       208
+       q-fin       1.00      0.86      0.92        83
+        stat       0.96      0.79      0.87       770
+
+   micro avg       0.96      0.90      0.93     11782
+   macro avg       0.97      0.84      0.90     11782
+weighted avg       0.96      0.90      0.93     11782
+ samples avg       0.95      0.93      0.93     11782
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+
+Extracting 20.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.8197047132311187
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.92      0.88      0.90      1060
+        eess       0.92      0.72      0.81        90
+        math       0.91      0.92      0.91      1371
+     physics       0.95      0.93      0.94      1590
+       q-bio       0.97      0.69      0.81        90
+       q-fin       1.00      0.70      0.83        37
+        stat       0.87      0.82      0.85       327
+
+   micro avg       0.92      0.90      0.91      4565
+   macro avg       0.93      0.81      0.86      4565
+weighted avg       0.92      0.90      0.91      4565
+ samples avg       0.91      0.91      0.90      4565
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+#
+# TRAINING SET
+#
+accuracy score: 0.9310915675116399
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.98      0.95      0.96      2532
+        eess       1.00      0.92      0.96       217
+        math       0.97      0.96      0.96      3447
+     physics       0.99      0.97      0.98      4525
+       q-bio       1.00      0.94      0.97       208
+       q-fin       1.00      0.98      0.99        83
+        stat       0.99      0.91      0.95       770
+
+   micro avg       0.98      0.96      0.97     11782
+   macro avg       0.99      0.95      0.97     11782
+weighted avg       0.98      0.96      0.97     11782
+ samples avg       0.98      0.97      0.97     11782
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+
+Extracting 30.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.8412833617262919
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.92      0.90      0.91      1060
+        eess       0.92      0.74      0.82        90
+        math       0.91      0.94      0.92      1371
+     physics       0.95      0.94      0.95      1590
+       q-bio       0.97      0.78      0.86        90
+       q-fin       1.00      0.70      0.83        37
+        stat       0.88      0.85      0.86       327
+
+   micro avg       0.93      0.92      0.92      4565
+   macro avg       0.94      0.84      0.88      4565
+weighted avg       0.93      0.92      0.92      4565
+ samples avg       0.91      0.92      0.91      4565
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+#
+# TRAINING SET
+#
+accuracy score: 0.9661665804449043
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.99      0.97      0.98      2532
+        eess       1.00      0.99      1.00       217
+        math       0.98      0.98      0.98      3447
+     physics       1.00      0.98      0.99      4525
+       q-bio       1.00      0.99      1.00       208
+       q-fin       1.00      0.99      0.99        83
+        stat       1.00      0.96      0.98       770
+
+   micro avg       0.99      0.98      0.99     11782
+   macro avg       1.00      0.98      0.99     11782
+weighted avg       0.99      0.98      0.99     11782
+ samples avg       0.99      0.99      0.99     11782
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+
+Extracting 40.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.8568994889267462
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.93      0.92      0.92      1060
+        eess       0.92      0.74      0.82        90
+        math       0.91      0.95      0.93      1371
+     physics       0.95      0.96      0.96      1590
+       q-bio       0.97      0.78      0.86        90
+       q-fin       1.00      0.70      0.83        37
+        stat       0.88      0.86      0.87       327
+
+   micro avg       0.93      0.93      0.93      4565
+   macro avg       0.94      0.84      0.88      4565
+weighted avg       0.93      0.93      0.93      4565
+ samples avg       0.92      0.93      0.91      4565
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+#
+# TRAINING SET
+#
+accuracy score: 0.9811691670977755
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       1.00      0.98      0.99      2532
+        eess       1.00      1.00      1.00       217
+        math       0.99      0.99      0.99      3447
+     physics       1.00      0.99      0.99      4525
+       q-bio       1.00      1.00      1.00       208
+       q-fin       1.00      1.00      1.00        83
+        stat       1.00      0.98      0.99       770
+
+   micro avg       1.00      0.99      0.99     11782
+   macro avg       1.00      0.99      0.99     11782
+weighted avg       1.00      0.99      0.99     11782
+ samples avg       1.00      0.99      0.99     11782
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+
+Extracting 50.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.8651334469051675
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.93      0.92      0.92      1060
+        eess       0.92      0.74      0.82        90
+        math       0.92      0.95      0.93      1371
+     physics       0.96      0.96      0.96      1590
+       q-bio       0.97      0.78      0.86        90
+       q-fin       1.00      0.70      0.83        37
+        stat       0.89      0.87      0.88       327
+
+   micro avg       0.93      0.93      0.93      4565
+   macro avg       0.94      0.85      0.89      4565
+weighted avg       0.93      0.93      0.93      4565
+ samples avg       0.91      0.93      0.91      4565
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+#
+# TRAINING SET
+#
+accuracy score: 0.9891360579410243
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       1.00      0.99      0.99      2532
+        eess       1.00      1.00      1.00       217
+        math       1.00      0.99      0.99      3447
+     physics       1.00      1.00      1.00      4525
+       q-bio       1.00      1.00      1.00       208
+       q-fin       1.00      1.00      1.00        83
+        stat       1.00      0.99      0.99       770
+
+   micro avg       1.00      0.99      1.00     11782
+   macro avg       1.00      0.99      1.00     11782
+weighted avg       1.00      0.99      1.00     11782
+ samples avg       1.00      1.00      1.00     11782
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+
+Extracting 60.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.8699602498580352
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.93      0.92      0.93      1060
+        eess       0.92      0.74      0.82        90
+        math       0.92      0.96      0.94      1371
+     physics       0.96      0.96      0.96      1590
+       q-bio       0.97      0.78      0.86        90
+       q-fin       1.00      0.70      0.83        37
+        stat       0.89      0.87      0.88       327
+
+   micro avg       0.93      0.93      0.93      4565
+   macro avg       0.94      0.85      0.89      4565
+weighted avg       0.94      0.93      0.93      4565
+ samples avg       0.91      0.93      0.92      4565
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+#
+# TRAINING SET
+#
+accuracy score: 0.9951370926021728
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       1.00      1.00      1.00      2532
+        eess       1.00      1.00      1.00       217
+        math       1.00      1.00      1.00      3447
+     physics       1.00      1.00      1.00      4525
+       q-bio       1.00      1.00      1.00       208
+       q-fin       1.00      1.00      1.00        83
+        stat       1.00      1.00      1.00       770
+
+   micro avg       1.00      1.00      1.00     11782
+   macro avg       1.00      1.00      1.00     11782
+weighted avg       1.00      1.00      1.00     11782
+ samples avg       1.00      1.00      1.00     11782
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+
+Extracting 70.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.8713798977853492
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.93      0.93      0.93      1060
+        eess       0.92      0.74      0.82        90
+        math       0.92      0.96      0.94      1371
+     physics       0.96      0.96      0.96      1590
+       q-bio       0.97      0.78      0.86        90
+       q-fin       1.00      0.68      0.81        37
+        stat       0.89      0.87      0.88       327
+
+   micro avg       0.94      0.94      0.94      4565
+   macro avg       0.94      0.85      0.89      4565
+weighted avg       0.94      0.94      0.94      4565
+ samples avg       0.92      0.93      0.92      4565
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+#
+# TRAINING SET
+#
+accuracy score: 0.9971029487842732
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       1.00      1.00      1.00      2532
+        eess       1.00      1.00      1.00       217
+        math       1.00      1.00      1.00      3447
+     physics       1.00      1.00      1.00      4525
+       q-bio       1.00      1.00      1.00       208
+       q-fin       1.00      1.00      1.00        83
+        stat       1.00      1.00      1.00       770
+
+   micro avg       1.00      1.00      1.00     11782
+   macro avg       1.00      1.00      1.00     11782
+weighted avg       1.00      1.00      1.00     11782
+ samples avg       1.00      1.00      1.00     11782
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+
+Extracting 80.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.8747870528109029
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.93      0.93      0.93      1060
+        eess       0.92      0.74      0.82        90
+        math       0.92      0.96      0.94      1371
+     physics       0.96      0.96      0.96      1590
+       q-bio       0.97      0.78      0.86        90
+       q-fin       1.00      0.68      0.81        37
+        stat       0.90      0.88      0.89       327
+
+   micro avg       0.94      0.94      0.94      4565
+   macro avg       0.94      0.85      0.89      4565
+weighted avg       0.94      0.94      0.94      4565
+ samples avg       0.92      0.93      0.92      4565
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+#
+# TRAINING SET
+#
+accuracy score: 0.9980341438178997
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       1.00      1.00      1.00      2532
+        eess       1.00      1.00      1.00       217
+        math       1.00      1.00      1.00      3447
+     physics       1.00      1.00      1.00      4525
+       q-bio       1.00      1.00      1.00       208
+       q-fin       1.00      1.00      1.00        83
+        stat       1.00      1.00      1.00       770
+
+   micro avg       1.00      1.00      1.00     11782
+   macro avg       1.00      1.00      1.00     11782
+weighted avg       1.00      1.00      1.00     11782
+ samples avg       1.00      1.00      1.00     11782
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+
+Extracting 90.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.8736513344690516
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.93      0.93      0.93      1060
+        eess       0.92      0.74      0.82        90
+        math       0.92      0.96      0.94      1371
+     physics       0.96      0.96      0.96      1590
+       q-bio       0.97      0.78      0.86        90
+       q-fin       1.00      0.70      0.83        37
+        stat       0.89      0.88      0.89       327
+
+   micro avg       0.94      0.94      0.94      4565
+   macro avg       0.94      0.85      0.89      4565
+weighted avg       0.94      0.94      0.94      4565
+ samples avg       0.92      0.93      0.92      4565
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+#
+# TRAINING SET
+#
+accuracy score: 0.9992757371960683
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       1.00      1.00      1.00      2532
+        eess       1.00      1.00      1.00       217
+        math       1.00      1.00      1.00      3447
+     physics       1.00      1.00      1.00      4525
+       q-bio       1.00      1.00      1.00       208
+       q-fin       1.00      1.00      1.00        83
+        stat       1.00      1.00      1.00       770
+
+   micro avg       1.00      1.00      1.00     11782
+   macro avg       1.00      1.00      1.00     11782
+weighted avg       1.00      1.00      1.00     11782
+ samples avg       1.00      1.00      1.00     11782
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+
+Extracting 100.0% best features by a chi-squared test
+Train binary relevance logistic regression tagger
+#
+# TEST SET
+#
+accuracy score: 0.873083475298126
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.93      0.93      0.93      1060
+        eess       0.92      0.74      0.82        90
+        math       0.92      0.96      0.94      1371
+     physics       0.96      0.96      0.96      1590
+       q-bio       0.97      0.78      0.86        90
+       q-fin       1.00      0.68      0.81        37
+        stat       0.89      0.88      0.89       327
+
+   micro avg       0.93      0.94      0.94      4565
+   macro avg       0.94      0.85      0.89      4565
+weighted avg       0.94      0.94      0.94      4565
+ samples avg       0.91      0.93      0.92      4565
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+#
+# TRAINING SET
+#
+accuracy score: 0.9993792033109157
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       1.00      1.00      1.00      2532
+        eess       1.00      1.00      1.00       217
+        math       1.00      1.00      1.00      3447
+     physics       1.00      1.00      1.00      4525
+       q-bio       1.00      1.00      1.00       208
+       q-fin       1.00      1.00      1.00        83
+        stat       1.00      1.00      1.00       770
+
+   micro avg       1.00      1.00      1.00     11782
+   macro avg       1.00      1.00      1.00     11782
+weighted avg       1.00      1.00      1.00     11782
+ samples avg       1.00      1.00      1.00     11782
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+
+
+
+=== summary ===
+best_feature_count = 21449
+best_feature_ratio = 0.8%
+
+#
+# TEST SET
+#
+accuracy score: 0.8747870528109029
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.93      0.93      0.93      1060
+        eess       0.92      0.74      0.82        90
+        math       0.92      0.96      0.94      1371
+     physics       0.96      0.96      0.96      1590
+       q-bio       0.97      0.78      0.86        90
+       q-fin       1.00      0.68      0.81        37
+        stat       0.90      0.88      0.89       327
+
+   micro avg       0.94      0.94      0.94      4565
+   macro avg       0.94      0.85      0.89      4565
+weighted avg       0.94      0.94      0.94      4565
+ samples avg       0.92      0.93      0.92      4565
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
+best_feature_count = 21449
+best_feature_ratio = 0.8%
+
+#
+# TRAINING SET
+#
+accuracy score: 0.9980341438178997
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       1.00      1.00      1.00      2532
+        eess       1.00      1.00      1.00       217
+        math       1.00      1.00      1.00      3447
+     physics       1.00      1.00      1.00      4525
+       q-bio       1.00      1.00      1.00       208
+       q-fin       1.00      1.00      1.00        83
+        stat       1.00      1.00      1.00       770
+
+   micro avg       1.00      1.00      1.00     11782
+   macro avg       1.00      1.00      1.00     11782
+weighted avg       1.00      1.00      1.00     11782
+ samples avg       1.00      1.00      1.00     11782
+
+
+classifier details:
+best_params = {'classifier': LogisticRegression(C=10, class_weight=None, dual=False, fit_intercept=True,
+          intercept_scaling=1, max_iter=100, multi_class='warn',
+          n_jobs=None, penalty='l2', random_state=None, solver='liblinear',
+          tol=0.0001, verbose=0, warm_start=False), 'classifier__C': 10}
