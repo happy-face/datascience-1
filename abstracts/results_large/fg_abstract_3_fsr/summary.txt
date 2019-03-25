@@ -1,0 +1,54 @@
+best_feature_count = 28974
+best_feature_ratio = 0.3%
+
+#
+# TEST SET
+#
+accuracy score: 0.7981936932340035
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.90      0.88      0.89      5134
+        eess       0.65      0.17      0.27       413
+        math       0.91      0.88      0.89      6255
+     physics       0.96      0.93      0.95      9568
+       q-bio       0.76      0.39      0.51       350
+       q-fin       0.82      0.51      0.63       131
+        stat       0.80      0.55      0.66      1837
+
+   micro avg       0.92      0.85      0.89     23688
+   macro avg       0.83      0.62      0.69     23688
+weighted avg       0.91      0.85      0.88     23688
+ samples avg       0.92      0.90      0.90     23688
+
+
+classifier details:
+NA
+best_feature_count = 28974
+best_feature_ratio = 0.3%
+
+#
+# TRAINING SET
+#
+accuracy score: 0.9033859519838653
+
+classification report:
+              precision    recall  f1-score   support
+
+          cs       0.96      0.94      0.95     20329
+        eess       0.98      0.64      0.77      1373
+        math       0.96      0.94      0.95     25658
+     physics       0.99      0.96      0.97     36409
+       q-bio       0.97      0.80      0.88      1506
+       q-fin       0.98      0.83      0.90       570
+        stat       0.95      0.82      0.88      5504
+
+   micro avg       0.97      0.93      0.95     91349
+   macro avg       0.97      0.85      0.90     91349
+weighted avg       0.97      0.93      0.95     91349
+ samples avg       0.97      0.96      0.96     91349
+
+
+classifier details:
+NA
