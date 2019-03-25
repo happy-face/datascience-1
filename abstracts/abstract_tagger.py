@@ -173,13 +173,13 @@ if __name__ == "__main__":
     df_train.head()
 
     print("Reading test set: %s" % args.test_data, flush=True)
-    df_test = pd.read_csv(args.test_data, nrows=args.max_rows)
+    df_test = pd.read_csv(args.test_data)
     df_test.head()
 
     df_validation = None
     if args.validation_data:
         print("Reading validation set: %s" % args.validation_data, flush=True)
-        df_validation = pd.read_csv(args.validation_data, nrows=args.max_rows)
+        df_validation = pd.read_csv(args.validation_data)
 
     print("Normalize training abstracts", flush=True)
     normalize_abstracts(df_train)
@@ -364,7 +364,7 @@ if __name__ == "__main__":
             if len(args.classifier_C) > 1:
                 parameters = [
                     {
-                        'classifier': [SVC(kernel=svm_kernel)],
+                        'classifier': [SVC(kernel=svm_kernel, verbose=True)],
                         'classifier__C': args.classifier_C,
                     }
                 ]
