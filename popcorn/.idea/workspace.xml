@@ -10,7 +10,32 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="525" />
+    <leaf>
+      <file leaf-file-name="bag_popcorn.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/bag_popcorn.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="607">
+              <caret line="123" column="55" lean-forward="true" selection-start-line="123" selection-start-column="55" selection-end-line="123" selection-end-column="55" />
+              <folding>
+                <element signature="e#25#40#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="abstract_tagger.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../abstracts/abstract_tagger.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="4118">
+              <caret line="171" column="64" lean-forward="true" selection-start-line="171" selection-start-column="64" selection-end-line="171" selection-end-column="64" />
+              <folding>
+                <element signature="e#25#40#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -22,14 +47,15 @@
   <component name="FindInProjectRecents">
     <findStrings>
       <find>category_id</find>
+      <find>args.m</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/../ml_text_class/text_class.py" />
-        <option value="$PROJECT_DIR$/bag_popcorn.py" />
         <option value="$PROJECT_DIR$/W2Vec_popcorn.py" />
+        <option value="$PROJECT_DIR$/bag_popcorn.py" />
       </list>
     </option>
   </component>
@@ -54,6 +80,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -65,12 +92,11 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="C:/insight_program/abstracts" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../abstracts/abstract_tagger.py" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -123,13 +149,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-11" y="-11" width="2278" height="1466" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.51724136" sideWeight="0.1391844" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2523511" sideWeight="0.14228724" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30956113" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.51724136" sideWeight="0.8608156" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2523511" sideWeight="0.85771275" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -158,7 +185,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#25#40#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -166,7 +195,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#25#40#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -174,7 +205,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#25#40#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -182,7 +215,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#25#40#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -190,7 +225,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#25#40#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -198,7 +235,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="960">
           <caret line="37" column="21" lean-forward="false" selection-start-line="37" selection-start-column="21" selection-end-line="37" selection-end-column="21" />
-          <folding />
+          <folding>
+            <element signature="e#25#40#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -207,7 +246,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#25#40#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -223,15 +264,26 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="920">
           <caret line="113" column="57" lean-forward="true" selection-start-line="111" selection-start-column="0" selection-end-line="113" selection-end-column="57" />
-          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../abstracts/abstract_tagger.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4118">
+          <caret line="171" column="64" lean-forward="true" selection-start-line="171" selection-start-column="64" selection-end-line="171" selection-end-column="64" />
+          <folding>
+            <element signature="e#25#40#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bag_popcorn.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="9" column="19" lean-forward="false" selection-start-line="9" selection-start-column="19" selection-end-line="9" selection-end-column="19" />
-          <folding />
+        <state relative-caret-position="607">
+          <caret line="123" column="55" lean-forward="true" selection-start-line="123" selection-start-column="55" selection-end-line="123" selection-end-column="55" />
+          <folding>
+            <element signature="e#25#40#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
