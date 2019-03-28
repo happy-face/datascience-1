@@ -36,6 +36,16 @@ def parse_args():
 
     return parser.parse_args()
 
+# printing statistics and results
+def output_results(file, tag, accuracy_score):
+    file.write("#\n")
+    file.write("# " + tag + "\n")
+    file.write("#\n")
+    file.write("accuracy scores:" + "\n")
+    accuracy_score.to_csv(file, sep='\t')
+    file.write("\n")
+
+
 if __name__ == "__main__":
     args = parse_args()
 
@@ -117,10 +127,14 @@ if __name__ == "__main__":
             entries.append((model_name, fold_idx, accuracy))
     cv_df = pd.DataFrame(entries, columns=['model_name','fold_idx','accuracy'])
 
-    print(cv_df.groupby('model_name')['accuracy'].mean())
+    accuracy_all_models = cv_df.groupby('model_name')['accuracy'].mean()
+    print(accuracy_all_models)
+    with open(os.path.join(args.output, "results.txt"), 'w') as results_file:
+        output_results(results_file, "TEST SET", accuracy_all_models)
 
     import seaborn as sns
 
-    sns.boxplot(x='model_name',y='accuracy',data=cv_df)
+    sns_plot = sns.boxplot(x='model_name',y='accuracy',data=cv_df)
     sns.stripplot(x='model_name', y='accuracy', data=cv_df, size=8, jitter=True, edgecolor='gray',linewidth=2)
     plt.show()
+    sns_plot.figure.savefig(os.path.join(args.output, 'model_accuracy_comparison.png'))

@@ -1,0 +1,9 @@
+#
+# TEST SET
+#
+accuracy scores:
+LinearSVC	0.8850996764999192
+LogisticRegression	0.8785010252252563
+MultinomialNB	0.870001023675256
+RandomForestClassifier	0.7748002552000639
+
