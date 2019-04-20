@@ -42,12 +42,15 @@ def calculate_probabilities(X,y):
             x_mean_all.append(x_mean)
             x_std_all.append(x_std)
 
-        return p_all, x_mean_all, x_std_all
+        #return p_all, x_mean_all, x_std_all
+        return x_mean_all, x_std_all
 
     class_prob = class_probabilities(y)
-    conditional_prob, x_mean, x_std = conditional_probabilities(X,y)
+    #conditional_prob, x_mean, x_std = conditional_probabilities(X,y)
+    x_mean, x_std = conditional_probabilities(X, y)
 
-    return class_prob, conditional_prob, x_mean, x_std
+    #return class_prob, conditional_prob, x_mean, x_std
+    return class_prob, x_mean, x_std
 
 def predict_class(X,y, x_mean, x_std, class_prob):
     pred_class = []
@@ -83,7 +86,8 @@ if __name__ == "__main__":
 
     X_train, X_test, y_train, y_test = train_test_split(X,y,random_state=0)
 
-    p_class, p_conditional, X_mean, X_std = calculate_probabilities(X_train, y_train)
+    #p_class, p_conditional, X_mean, X_std = calculate_probabilities(X_train, y_train)
+    p_class, X_mean, X_std = calculate_probabilities(X_train, y_train)
 
     y_pred = predict_class(X_test,y_train, X_mean, X_std, p_class)
 
