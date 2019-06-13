@@ -214,7 +214,8 @@ if __name__ == "__main__":
     table = []
     for im_path in im_paths:
 
-        image = cv2.imread(os.path.join(args.im_path, im_path))
+        image = cv2.imread(im_path)
+        assert image is not None
 
         #convert to gray
         gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -244,7 +245,7 @@ if __name__ == "__main__":
 
         closed_eyes = closed_eyes_detector(landmarks)
 
-        im_set = os.path.split(os.path.dirname(df.im_path))[-1]
+        im_set = os.path.split(os.path.dirname(im_path))[-1]
         table_entry = [im_path, im_set, blur, noise, brightness, faces, number_of_faces, faces_blur_all, faces_noise_all, faces_brightness_all, closed_eyes]
         table.append(table_entry)
 
