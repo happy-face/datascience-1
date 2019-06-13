@@ -119,9 +119,20 @@ def face_landmarks_detector(img, faces, im_name, out_path):
 
         face_landmarks.append(shape)
 
-    # show the output image with the face detections
-    cv2.imshow("Output", image)
-    cv2.waitKey(0)
+#    # show the output image with the face detections
+#    if img_width > 1024:
+#        disp_img_width = 1024
+#        disp_img_heigh = int(disp_img_width * (float(img_height) / img_width))
+#    elif img_height > 768:
+#        disp_img_heigh = 768
+#        disp_img_width = int(disp_img_heigh * (float(img_width) / img_height))
+#    else:
+#        disp_img_width = img_width
+#        disp_img_heigh = img_height
+#    disp_img = cv2.resize(image, (disp_img_width, disp_img_heigh))
+#    cv2.imshow("Output", disp_img)
+#    cv2.waitKey(0)
+
     output_path = os.path.join(out_path, im_name + '_face_landmarks.png')
     output_dir = os.path.dirname(output_path)
     if not os.path.exists(output_dir):
