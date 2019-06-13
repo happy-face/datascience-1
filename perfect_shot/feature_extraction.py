@@ -209,8 +209,9 @@ def get_path_recursive(input_folder, file_extensions, paths):
         for file in files:
             if os.path.splitext(file)[1] in file_extensions:
                 paths.append(os.path.join(root, file))
-        for subdir in subdirs:
-            get_path_recursive(os.path.join(root, subdir), file_extensions, paths)
+#        for subdir in subdirs:
+#            print(os.path.join(root, subdir))
+#            get_path_recursive(os.path.join(root, subdir), file_extensions, paths)
 
 
 if __name__ == "__main__":
@@ -227,6 +228,7 @@ if __name__ == "__main__":
     file_extensions = ['.JPG', '.jpg', '.png', '.PNG']
     im_paths = []
     get_path_recursive(args.im_path, file_extensions, im_paths)
+    print(len(im_paths))
 
     df = pd.DataFrame(im_paths, columns=['file_name'])
 
@@ -267,7 +269,7 @@ if __name__ == "__main__":
 
         im_set = os.path.split(os.path.dirname(im_path))[-1]
         im_path_csv = os.path.join(im_set, os.path.basename(im_path))
-        table_entry = [im_path, im_path_csv, blur, noise, brightness, faces, number_of_faces, faces_blur_all, faces_noise_all, faces_brightness_all, closed_eyes]
+        table_entry = [im_path_csv, im_set, blur, noise, brightness, faces, number_of_faces, faces_blur_all, faces_noise_all, faces_brightness_all, closed_eyes]
         table.append(table_entry)
 
     df_output = pd.DataFrame(table, columns = ['im_file', 'set', 'blur', 'noise', 'brightness', 'faces', 'number_of_faces', 'faces_blur_all', 'faces_noise_all',

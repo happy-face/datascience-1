@@ -284,8 +284,8 @@ def get_path_recursive(input_folder, file_extensions, paths):
         for file in files:
             if os.path.splitext(file)[1] in file_extensions:
                 paths.append(os.path.join(root, file))
-        for subdir in subdirs:
-            get_path_recursive(os.path.join(root, subdir), file_extensions, paths)
+#        for subdir in subdirs:
+#            get_path_recursive(os.path.join(root, subdir), file_extensions, paths)
 
 
 # The main bit of the script only gets exectured if it is directly called
