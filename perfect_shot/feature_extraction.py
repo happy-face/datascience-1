@@ -208,7 +208,7 @@ if __name__ == "__main__":
     im_paths = []
     get_path_recursive(args.im_path, file_extensions, im_paths)
 
-    df = pd.DataFrame(im_files, columns=['file_name'])
+    df = pd.DataFrame(im_paths, columns=['file_name'])
 
 
     table = []
