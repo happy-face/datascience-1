@@ -184,6 +184,15 @@ def get_face_roi(img, face):
     return face_roi
 
 
+def get_path_recursive(input_folder, file_extensions, paths):
+    for root, subdirs, files in os.walk(input_folder):
+        for file in files:
+            if os.path.splitext(file)[1] in file_extensions:
+                paths.append(os.path.join(root, file))
+        for subdir in subdirs:
+            get_path_recursive(os.path.join(root, subdir), file_extensions, paths)
+
+
 if __name__ == "__main__":
     args = parse_args()
 
@@ -195,7 +204,7 @@ if __name__ == "__main__":
         os.makedirs(args.output)
 
     #import image list
-    im_files = os.listdir(args.im_path)
+    im_files = get_path_recursive(args.im_path)
 
     df = pd.DataFrame(im_files, columns=['file_name'])
 
