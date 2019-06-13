@@ -250,7 +250,8 @@ if __name__ == "__main__":
         closed_eyes = closed_eyes_detector(landmarks)
 
         im_set = os.path.split(os.path.dirname(im_path))[-1]
-        table_entry = [im_path, im_set, blur, noise, brightness, faces, number_of_faces, faces_blur_all, faces_noise_all, faces_brightness_all, closed_eyes]
+        im_path_csv = os.path.join(im_set, os.path.basename(im_path))
+        table_entry = [im_path, im_path_csv, blur, noise, brightness, faces, number_of_faces, faces_blur_all, faces_noise_all, faces_brightness_all, closed_eyes]
         table.append(table_entry)
 
     df_output = pd.DataFrame(table, columns = ['im_file', 'set', 'blur', 'noise', 'brightness', 'faces', 'number_of_faces', 'faces_blur_all', 'faces_noise_all',
