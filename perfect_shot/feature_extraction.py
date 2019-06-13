@@ -117,6 +117,10 @@ def face_landmarks_detector(img, faces, im_name, out_path):
     # show the output image with the face detections
     cv2.imshow("Output", image)
     cv2.waitKey(0)
+    output_path = os.path.join(out_path, im_name + '_face_landmarks.png')
+    output_dir = os.path.dirname(output_path)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     cv2.imwrite(os.path.join(out_path, im_name + '_face_landmarks.png'),image)
 
     return face_landmarks
