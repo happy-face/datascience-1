@@ -204,15 +204,17 @@ if __name__ == "__main__":
         os.makedirs(args.output)
 
     #import image list
-    im_files = get_path_recursive(args.im_path)
+    file_extensions = ['.JPG', '.jpg', '.png', '.PNG']
+    im_paths = []
+    get_path_recursive(args.im_path, file_extensions, im_paths)
 
     df = pd.DataFrame(im_files, columns=['file_name'])
 
 
     table = []
-    for im_name in im_files:
+    for im_path in im_paths:
 
-        image = cv2.imread(os.path.join(args.im_path, im_name))
+        image = cv2.imread(os.path.join(args.im_path, im_path))
 
         #convert to gray
         gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -238,14 +240,15 @@ if __name__ == "__main__":
             faces_noise_all.append(face_noise)
             faces_brightness_all.append(face_brightness)
 
-        landmarks = face_landmarks_detector(gray_img, faces, im_name, args.output)
+        landmarks = face_landmarks_detector(gray_img, faces, im_path, args.output)
 
         closed_eyes = closed_eyes_detector(landmarks)
 
-        table_entry = [im_name, blur, noise, brightness, faces, number_of_faces, faces_blur_all, faces_noise_all, faces_brightness_all, closed_eyes]
+        im_set = os.path.split(os.path.dirname(df.im_path))[-1]
+        table_entry = [im_path, im_set, blur, noise, brightness, faces, number_of_faces, faces_blur_all, faces_noise_all, faces_brightness_all, closed_eyes]
         table.append(table_entry)
 
-    df_output = pd.DataFrame(table, columns = ['im_file','blur', 'noise', 'brightness', 'faces', 'number_of_faces', 'faces_blur_all', 'faces_noise_all',
+    df_output = pd.DataFrame(table, columns = ['im_file', 'set', 'blur', 'noise', 'brightness', 'faces', 'number_of_faces', 'faces_blur_all', 'faces_noise_all',
                    'faces_brightness_all', 'closed_eyes'])
 
     df_output.to_csv(os.path.join(args.output, 'results_processed.csv'), sep='\t')
