@@ -16,6 +16,13 @@
  Date: 24. Dec 2018
 """
 
+# construct the argument parser and parse the arguments
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input", required=True, help="Path to the input folder")
+    parser.add_argument("-d", "--dataset", required=True, help="Dataset CSV file path. If this file doesn't exist it will get created. If it exists we will load it and contiue labeling.")
+    return parser.parse_args()
+
 
 # Define global variables, which are to be changed by user:
 
@@ -295,6 +302,10 @@ if __name__ == "__main__":
 #     input_folder = args.folder
 #     labels = args.labels
 
+    args = parse_args()
+    input_folder = args.input
+    df_path = args.dataset
+
     # Put all image file paths into a list
     paths = []
     get_path_recursive(input_folder, file_extensions, paths)
@@ -304,12 +315,10 @@ if __name__ == "__main__":
         # Store configuration file values
     except FileNotFoundError:
         df = pd.DataFrame(columns=["im_path", 'set_name', 'label'])
-        df.im_path = paths
-        df.label = labels[0]
-        for i in range(len(df.im_path)):
-            df.set_name[i] = os.path.split(os.path.dirname(df.im_path[i]))[-1]
-        #df = df.sort_values('im_path')
-        #df = df.reset_index(drop=True)
+        for i in range(len(paths)):
+            set_name = os.path.split(os.path.dirname(paths[i]))[-1]
+            image_path = os.path.join(set_name, os.path.basename(paths[i]))
+            df.loc[i] = [image_path, set_name, labels[0]]
 
 
 # Start the GUI
