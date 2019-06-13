@@ -186,7 +186,7 @@ class ImageGui:
         self.sorting_label.configure(text=("label: %s" % (label)), bg=self.colors[label_index])
 
         if self.index < self.n_paths:
-            self.set_image(df.im_path[self.index])
+            self.set_image(paths[self.index])
         else:
             self.master.quit()
 
