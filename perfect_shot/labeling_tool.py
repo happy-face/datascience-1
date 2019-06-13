@@ -186,7 +186,7 @@ class ImageGui:
         self.sorting_label.configure(text=("label: %s" % (label)), bg=self.colors[label_index])
 
         if self.index < self.n_paths:
-            self.set_image(paths[self.index])
+            self.set_image(df.full_path[self.index])
         else:
             self.master.quit()
 
@@ -314,11 +314,11 @@ if __name__ == "__main__":
         df = pd.read_csv(df_path, header=0)
         # Store configuration file values
     except FileNotFoundError:
-        df = pd.DataFrame(columns=["im_path", 'set_name', 'label'])
+        df = pd.DataFrame(columns=["full_path", "im_path", 'set_name', 'label'])
         for i in range(len(paths)):
             set_name = os.path.split(os.path.dirname(paths[i]))[-1]
             image_path = os.path.join(set_name, os.path.basename(paths[i]))
-            df.loc[i] = [image_path, set_name, labels[0]]
+            df.loc[i] = [paths[i], image_path, set_name, labels[0]]
 
 
 # Start the GUI
