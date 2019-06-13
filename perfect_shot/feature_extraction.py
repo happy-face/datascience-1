@@ -89,7 +89,8 @@ def face_detector(img):
 def face_landmarks_detector(img, faces, im_name, out_path):
 
     # create the facial landmark predictor
-    predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
+    python_script_dir = os.path.dirname(os.path.realpath(__file__))
+    predictor = dlib.shape_predictor(os.path.join(python_script_dir, 'shape_predictor_68_face_landmarks.dat'))
 
     face_landmarks = []
 
