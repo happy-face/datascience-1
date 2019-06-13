@@ -21,6 +21,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", required=True, help="Path to the input folder")
     parser.add_argument("-d", "--dataset", required=True, help="Dataset CSV file path. If this file doesn't exist it will get created. If it exists we will load it and contiue labeling.")
+    parser.add_argument("-mw", "--max-width", type=int, default=1700, help="Max width for image so it fits the screen")
+    parser.add_argument("-mh", "--max-height", type=int, default=900, help="Max height for image so it fits the screen")
     return parser.parse_args()
 
 
@@ -305,6 +307,9 @@ if __name__ == "__main__":
     args = parse_args()
     input_folder = args.input
     df_path = args.dataset
+    img_max_width = args.max_width
+    img_max_height = args.max_height
+    
 
     # Put all image file paths into a list
     paths = []
