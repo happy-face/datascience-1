@@ -92,6 +92,10 @@ def face_landmarks_detector(img, faces, im_name, out_path):
     python_script_dir = os.path.dirname(os.path.realpath(__file__))
     predictor = dlib.shape_predictor(os.path.join(python_script_dir, 'shape_predictor_68_face_landmarks.dat'))
 
+    img_height, img_width = img.shape
+    tickness = int(round(max(img_height, img_width) / 512));
+    font_scale = 0.5 * tickness
+
     face_landmarks = []
 
     for (i,rect) in enumerate(faces):
@@ -102,16 +106,16 @@ def face_landmarks_detector(img, faces, im_name, out_path):
         shape = face_utils.shape_to_np(shape)
 
         (x, y, w, h) = face_utils.rect_to_bb(rect)
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), tickness)
 
         # show the face number
         cv2.putText(image, "Face #{}".format(i + 1), (x - 10, y - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 255, 0), tickness)
 
         # loop over the (x, y)-coordinates for the facial landmarks
         # and draw them on the image
         for (x, y) in shape:
-            cv2.circle(image, (x, y), 1, (0, 0, 255), -1)
+            cv2.circle(image, (x, y), 1, (0, 0, 255), tickness)
 
         face_landmarks.append(shape)
 
