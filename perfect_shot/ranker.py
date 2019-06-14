@@ -163,10 +163,19 @@ def basic_sort(in_list):
     return r
 
 
+def score_top_1(set2sorted):
+    correct = 0
+    for set_name, image_samples in set2sorted.items():
+        if image_samples[0].y == 1:
+            correct += 1
+    return float(correct) / len(set2sorted)
+
+
 label2id = {"discard": 0, "keep": 1}
 
 
 if __name__ == "__main__":
+    np.random.seed(31415)
 
     args = parse_args()
 
@@ -200,18 +209,24 @@ if __name__ == "__main__":
     print("train accuracy: %.2f%%" % (100.0 * clf.score(Xp_train, yp_train)))
     print("test accuracy: %.2f%%" % (100.0 * clf.score(Xp_test, yp_test)))
 
-    print("train accuracy: %.2f%%" % (100.0 * clf.score(Xp_train, yp_train)))
-    print("test accuracy: %.2f%%" % (100.0 * clf.score(Xp_test, yp_test)))
 
     # set reference to classifier so that we can use comparison methods on ImageSample
     ImageSample.clf = clf
+
+    # rank all sets in training
+    set2sorted_train = {}
+    for set_name, image_samples in train:
+        set2sorted_train[set_name] = sorted(image_samples, reverse=True)
+
+    #rank all sets in test
+    set2sorted_test = {}
     for set_name, image_samples in test:
-        print(set_name)
-        sorted_samples = sorted(image_samples, reverse=True)
-        #sorted_samples = basic_sort(image_samples)
-        for sample in sorted_samples:
-            print("\t" + str(sample))
-        print()
+        set2sorted_test[set_name] = sorted(image_samples, reverse=True)
+
+    print()
+    print()
+    print("train top1: %.2f%%" % (100 * score_top_1(set2sorted_train)))
+    print("test top1: %.2f%%" % (100 * score_top_1(set2sorted_test)))
 
 
     # X = df[['im_file', 'blur', 'noise', 'brightness']]
