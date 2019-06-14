@@ -56,6 +56,9 @@ class ImageSample:
         self.y = y
         self.im_path = im_path
 
+    def __str__(self):
+        return "\t".join([self.im_path, str(self.X), str(self.y)])
+
     def __eq__(self, other):
         return False
 
@@ -74,8 +77,8 @@ class ImageSample:
     def __ge__(self, other):
         return self.__gt__(other)
 
-    def __repr__(self):
-        return str(self)
+#    def __repr__(self):
+#        return str(self)
 
 
 #
@@ -94,7 +97,7 @@ def create_sets(feat_df, img2label_and_set):
 
         if not set_name in set_name2image_samples:
             set_name2image_samples[set_name] = []
-        set_name2image_samples[set_name].append(ImageSample(X, label, im_path, None))
+        set_name2image_samples[set_name].append(ImageSample(X, label, im_path))
 
     return set_name2image_samples
 
@@ -149,6 +152,16 @@ def sets2pairwise(set_image_samples):
     return Xp, yp
 
 
+def basic_sort(in_list):
+    r = list(in_list)
+    for i in range(0, len(r)):
+        for j in range(i + 1, len(r)):
+            if r[i] < r[j]:
+                t = r[j]
+                r[j] = r[i]
+                r[i] = t
+    return r
+
 
 label2id = {"discard": 0, "keep": 1}
 
@@ -187,11 +200,15 @@ if __name__ == "__main__":
     print("train accuracy: %.2f%%" % (100.0 * clf.score(Xp_train, yp_train)))
     print("test accuracy: %.2f%%" % (100.0 * clf.score(Xp_test, yp_test)))
 
+    print("train accuracy: %.2f%%" % (100.0 * clf.score(Xp_train, yp_train)))
+    print("test accuracy: %.2f%%" % (100.0 * clf.score(Xp_test, yp_test)))
+
     # set reference to classifier so that we can use comparison methods on ImageSample
     ImageSample.clf = clf
     for set_name, image_samples in test:
         print(set_name)
         sorted_samples = sorted(image_samples, reverse=True)
+        #sorted_samples = basic_sort(image_samples)
         for sample in sorted_samples:
             print("\t" + str(sample))
         print()
