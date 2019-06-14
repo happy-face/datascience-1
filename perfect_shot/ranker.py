@@ -49,13 +49,33 @@ def read_labels(path, label2id):
 # Class representing information about image: feature vector, label and im_path
 #
 class ImageSample:
+    clf = None
+
     def __init__(self, X, y, im_path):
         self.X = X
         self.y = y
         self.im_path = im_path
 
-    def __str__(self):
-        return "\t".join([self.im_path, str(self.X), str(self.y)])
+    def __eq__(self, other):
+        return False
+
+    def __ne__(self, other):
+        return True
+
+    def __lt__(self, other):
+        return ImageSample.clf.predict([self.X + other.X])[0] == -1
+
+    def __le__(self, other):
+        return self.__lt__(other)
+
+    def __gt__(self, other):
+        return ImageSample.clf.predict([self.X + other.X])[0] == 1
+
+    def __ge__(self, other):
+        return self.__gt__(other)
+
+    def __repr__(self):
+        return str(self)
 
 
 #
@@ -74,7 +94,7 @@ def create_sets(feat_df, img2label_and_set):
 
         if not set_name in set_name2image_samples:
             set_name2image_samples[set_name] = []
-        set_name2image_samples[set_name].append(ImageSample(X, label, im_path))
+        set_name2image_samples[set_name].append(ImageSample(X, label, im_path, None))
 
     return set_name2image_samples
 
@@ -131,6 +151,7 @@ def sets2pairwise(set_image_samples):
     return Xp, yp
 
 
+
 label2id = {"discard": 0, "keep": 1}
 
 
@@ -167,6 +188,15 @@ if __name__ == "__main__":
     print()
     print("train accuracy: %.2f%%" % (100.0 * clf.score(Xp_train, yp_train)))
     print("test accuracy: %.2f%%" % (100.0 * clf.score(Xp_test, yp_test)))
+
+    # set reference to classifier so that we can use comparison methods on ImageSample
+    ImageSample.clf = clf
+    for set_name, image_samples in test:
+        print(set_name)
+        sorted_samples = sorted(image_samples, reverse=True)
+        for sample in sorted_samples:
+            print("\t" + str(sample))
+        print()
 
 
     # X = df[['im_file', 'blur', 'noise', 'brightness']]
