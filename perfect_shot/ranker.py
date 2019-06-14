@@ -63,18 +63,18 @@ class ImageSample:
 #
 def create_sets(feat_df, img2label_and_set):
     set_name2image_samples = {}
-    for row_id in range(0, len(feat_df.im_file)):
-        im_file = feat_df.im_file[row_id]
-        if not im_file in img2label_and_set:
-            print("Skipping %s because label was not found" % im_file)
+    for row_id in range(0, len(feat_df.im_path)):
+        im_path = feat_df.im_path[row_id]
+        if not im_path in img2label_and_set:
+            print("Skipping %s because label was not found" % im_path)
             continue
-        label, set_name = img2label_and_set[im_file]
+        label, set_name = img2label_and_set[im_path]
 
         X = row_to_feature_vector(feat_df, row_id)
 
         if not set_name in set_name2image_samples:
             set_name2image_samples[set_name] = []
-        set_name2image_samples[set_name].append(ImageSample(X, label, im_file))
+        set_name2image_samples[set_name].append(ImageSample(X, label, im_path))
 
     return set_name2image_samples
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     img2label_and_set = read_labels(args.labels, label2id)
 
     # featurize
-    feat_df = pd.read_csv(args.input, '\t')
+    feat_df = pd.read_csv(args.input)
     set_name2image_samples = create_sets(feat_df, img2label_and_set)
     #print_sets(set_name2image_samples)
 
@@ -161,8 +161,13 @@ if __name__ == "__main__":
     Xp_train, yp_train = sets2pairwise(train)
     Xp_test, yp_test = sets2pairwise(test)
 
-    clf = svm.SVC(kernel='linear', C=.1)
-    clf.fit(Xp_train, yp_test)
+    clf = svm.SVC(kernel='linear', C=.1, verbose=True)
+    clf.fit(Xp_train, yp_train)
+    print()
+    print()
+    print("train accuracy: %.2f%%" % (100.0 * clf.score(Xp_train, yp_train)))
+    print("test accuracy: %.2f%%" % (100.0 * clf.score(Xp_test, yp_test)))
+
 
     # X = df[['im_file', 'blur', 'noise', 'brightness']]
     # X['brightness'] = X['brightness'].str.strip('[]').astype(float)
