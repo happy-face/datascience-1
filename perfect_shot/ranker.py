@@ -115,8 +115,6 @@ def pairwise_transform(X, y, Xp, yp):
         Xp.append(X[j] + X[i])
         yp.append(np.sign(y[j] - y[i]))
 
-    return Xp, yp
-
 
 def sets2pairwise(set_image_samples):
     Xp = []
