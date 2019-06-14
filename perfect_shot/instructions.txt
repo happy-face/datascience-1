@@ -1,0 +1,13 @@
+# from DATA folder: label set
+python3 /home/kornjacinvrac/git/datascience/perfect_shot/labeling_tool.py -i img_quality_dataset/ -d img_quality_dataset_labels.csv
+
+# from DATA folder: extract features
+python3 /home/kornjacinvrac/git/datascience/perfect_shot/feature_extraction.py -ip img_quality_dataset -o img_quality_dataset_feat
+
+# from perfect_shoot folder
+# 1. copy outputs of labeling and featurization
+# 2. run the ranker
+cp ~/data/img_quality_dataset_labels.csv dataset/
+cp ~/data/img_quality_dataset_feat/results_processed.csv dataset/img_quality_dataset_feat.csv
+python3 ranker.py -i dataset/img_quality_dataset_feat.csv -l dataset/img_quality_dataset_labels.csv -o out_img_quality --force
+
