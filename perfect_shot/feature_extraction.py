@@ -235,7 +235,8 @@ if __name__ == "__main__":
 
     table = []
     for im_path in im_paths:
-
+        
+        print("Image file processed: ", im_path)
         image = cv2.imread(im_path)
         assert image is not None
 
