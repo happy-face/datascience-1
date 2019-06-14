@@ -53,21 +53,19 @@ def estimate_general_quality(img):
 
     def estimate_brightness(img):
         histogram = cv2.calcHist([img], [0], None, [256], [0, 256])
-        pixels = sum(histogram)
+        pixels = sum(histogram)[0]
         brightness = scale = len(histogram)
-
         for index in range(0, scale):
-            ratio = histogram[index] / pixels
+            ratio = histogram[index][0] / pixels
             brightness += ratio * (-scale + index)
-
         return 1 if brightness == 255 else brightness / scale
 
     blur_score = estimate_blur(img)
-    print("Blurrines of the image: ", blur_score)
+    #print("Blurrines of the image: ", blur_score)
     noise_score = estimate_noise(img)
-    print("Noise in the image: ", noise_score)
+    #print("Noise in the image: ", noise_score)
     bright_score = estimate_brightness(img)
-    print("Brightness of the image: ", bright_score)
+    #print("Brightness of the image: ", bright_score)
     return blur_score, noise_score, bright_score
 
 #must have gray image as input
@@ -78,10 +76,10 @@ def face_detector(img):
 
     # detect faces in the grayscale image
     faces = detector(img, 1)
-    print('Faces found: ', len(faces))
+    #print('Faces found: ', len(faces))
 
-    if len(faces) == 0:
-        print('No faces detected')
+    #if len(faces) == 0:
+    #    print('No faces detected')
 
     return faces
 
@@ -228,52 +226,53 @@ if __name__ == "__main__":
     file_extensions = ['.JPG', '.jpg', '.png', '.PNG']
     im_paths = []
     get_path_recursive(args.im_path, file_extensions, im_paths)
-    print(len(im_paths))
+    im_paths = sorted(im_paths)
 
     df = pd.DataFrame(im_paths, columns=['file_name'])
 
 
     table = []
     for im_path in im_paths:
-        
-        print("Image file processed: ", im_path)
-        image = cv2.imread(im_path)
-        assert image is not None
+        try:
+            print("Processing: %d/%d %s" % (len(table) + 1, len(im_paths), im_path))
+            image = cv2.imread(im_path)
+            assert image is not None
 
-        #convert to gray
-        gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            #convert to gray
+            gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        blur, noise, brightness = estimate_general_quality(gray_img)
+            blur, noise, brightness = estimate_general_quality(gray_img)
+            #face region detection
+            faces = face_detector(gray_img)
+            number_of_faces = len(faces)
 
-        #face region detection
-        faces = face_detector(gray_img)
-        number_of_faces = len(faces)
+            #EXTRACT FACE FEATURES
 
-        #EXTRACT FACE FEATURES
+            faces_blur_all = []
+            faces_noise_all = []
+            faces_brightness_all = []
 
-        faces_blur_all = []
-        faces_noise_all = []
-        faces_brightness_all = []
+            for face in faces:
+                # extract face ROI
+                face_roi = get_face_roi(gray_img, face)
+                face_blur, face_noise, face_brightness = estimate_general_quality(face_roi)
 
-        for face in faces:
-            # extract face ROI
-            face_roi = get_face_roi(gray_img, face)
-            face_blur, face_noise, face_brightness = estimate_general_quality(face_roi)
+                faces_blur_all.append(face_blur)
+                faces_noise_all.append(face_noise)
+                faces_brightness_all.append(face_brightness)
 
-            faces_blur_all.append(face_blur)
-            faces_noise_all.append(face_noise)
-            faces_brightness_all.append(face_brightness)
+            landmarks = face_landmarks_detector(gray_img, faces, im_path, args.output)
 
-        landmarks = face_landmarks_detector(gray_img, faces, im_path, args.output)
+            closed_eyes = closed_eyes_detector(landmarks)
 
-        closed_eyes = closed_eyes_detector(landmarks)
+            im_set = os.path.split(os.path.dirname(im_path))[-1]
+            im_path_csv = os.path.join(im_set, os.path.basename(im_path))
+            table_entry = [im_path_csv, im_set, blur, noise, brightness, faces, number_of_faces, faces_blur_all, faces_noise_all, faces_brightness_all, closed_eyes]
+            table.append(table_entry)
+        except:
+            print("Failed to process: ", im_path)
 
-        im_set = os.path.split(os.path.dirname(im_path))[-1]
-        im_path_csv = os.path.join(im_set, os.path.basename(im_path))
-        table_entry = [im_path_csv, im_set, blur, noise, brightness, faces, number_of_faces, faces_blur_all, faces_noise_all, faces_brightness_all, closed_eyes]
-        table.append(table_entry)
-
-    df_output = pd.DataFrame(table, columns = ['im_file', 'set', 'blur', 'noise', 'brightness', 'faces', 'number_of_faces', 'faces_blur_all', 'faces_noise_all',
+    df_output = pd.DataFrame(table, columns = ['im_path', 'set_name', 'blur', 'noise', 'brightness', 'faces', 'number_of_faces', 'faces_blur_all', 'faces_noise_all',
                    'faces_brightness_all', 'closed_eyes'])
 
-    df_output.to_csv(os.path.join(args.output, 'results_processed.csv'), sep='\t')
+    df_output.to_csv(os.path.join(args.output, 'results_processed.csv'))
