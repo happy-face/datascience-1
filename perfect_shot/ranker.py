@@ -192,11 +192,11 @@ if __name__ == "__main__":
     # featurize
     feat_df = pd.read_csv(args.input)
     set_name2image_samples = create_sets(feat_df, img2label_and_set)
-    #print_sets(set_name2image_samples)
+    print_sets(set_name2image_samples)
 
     # training/test split
     set_image_sample_items = list(set_name2image_samples.items())
-    train, test = train_test_split(set_image_sample_items, test_size=int(5))
+    train, test = train_test_split(set_image_sample_items, test_size=0.5)
 
     # transform training into pairwise classification problem
     Xp_train, yp_train = sets2pairwise(train)

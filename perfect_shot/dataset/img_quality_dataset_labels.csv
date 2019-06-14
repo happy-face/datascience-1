@@ -1,0 +1,12 @@
+,full_path,im_path,set_name,label
+0,img_quality_dataset/set_1/IMG_6797.jpg,set_1/IMG_6797.jpg,set_1,discard
+1,img_quality_dataset/set_1/IMG_7799.jpg,set_1/IMG_7799.jpg,set_1,discard
+2,img_quality_dataset/set_1/IMG_7803.jpg,set_1/IMG_7803.jpg,set_1,discard
+3,img_quality_dataset/set_1/IMG_7927.jpg,set_1/IMG_7927.jpg,set_1,keep
+4,img_quality_dataset/set_2/2017-01-15 10.22.00.jpg,set_2/2017-01-15 10.22.00.jpg,set_2,keep
+5,img_quality_dataset/set_2/IMG_8083.jpg,set_2/IMG_8083.jpg,set_2,discard
+6,img_quality_dataset/set_3/IMG_6902.jpg,set_3/IMG_6902.jpg,set_3,discard
+7,img_quality_dataset/set_3/IMG_7869.jpg,set_3/IMG_7869.jpg,set_3,discard
+8,img_quality_dataset/set_3/img-2011-11-21-1332.JPG,set_3/img-2011-11-21-1332.JPG,set_3,keep
+9,img_quality_dataset/set_4/2018-02-22 11.15.44.jpg,set_4/2018-02-22 11.15.44.jpg,set_4,keep
+10,img_quality_dataset/set_4/img-2011-10-27-0444.JPG,set_4/img-2011-10-27-0444.JPG,set_4,discard
