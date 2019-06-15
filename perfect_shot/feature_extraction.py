@@ -60,11 +60,13 @@ def estimate_general_quality(img):
             brightness += ratio * (-scale + index)
         return 1 if brightness == 255 else brightness / scale
 
-    blur_score = estimate_blur(img)
+    resized_img = cv2.resize(img, (512, 512), interpolation=cv2.INTER_NEAREST)
+
+    blur_score = estimate_blur(resized_img)
     #print("Blurrines of the image: ", blur_score)
-    noise_score = estimate_noise(img)
+    noise_score = estimate_noise(resized_img)
     #print("Noise in the image: ", noise_score)
-    bright_score = estimate_brightness(img)
+    bright_score = estimate_brightness(resized_img)
     #print("Brightness of the image: ", bright_score)
     return blur_score, noise_score, bright_score
 
@@ -269,8 +271,10 @@ if __name__ == "__main__":
             im_path_csv = os.path.join(im_set, os.path.basename(im_path))
             table_entry = [im_path_csv, im_set, blur, noise, brightness, faces, number_of_faces, faces_blur_all, faces_noise_all, faces_brightness_all, closed_eyes]
             table.append(table_entry)
-        except:
+        except Exception as e:
             print("Failed to process: ", im_path)
+            print(e)
+            print # -*- coding: utf-8 -*-
 
     df_output = pd.DataFrame(table, columns = ['im_path', 'set_name', 'blur', 'noise', 'brightness', 'faces', 'number_of_faces', 'faces_blur_all', 'faces_noise_all',
                    'faces_brightness_all', 'closed_eyes'])
