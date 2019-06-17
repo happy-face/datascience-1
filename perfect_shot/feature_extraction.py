@@ -372,4 +372,4 @@ if __name__ == "__main__":
     df_output = pd.DataFrame(table, columns = ['im_path', 'set_name', 'sharpness', 'noise', 'motion_blur', 'contrast', 'saturation', 'lines', 'symmetry', 'faces', 'number_of_faces', 'faces_sharp_all', 'faces_noise_all',
                    'faces_motion_blur_all', 'closed_eyes'])
 
-    df_output.to_csv(os.path.join(args.output, 'results_processed.csv'))
+    df_output.to_csv(os.path.join(args.output))
