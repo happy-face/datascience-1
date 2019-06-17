@@ -5,6 +5,7 @@ import argparse
 from scipy import stats
 import pylab as pl
 import cv2
+import numpy as np
 from sklearn import svm, linear_model
 from sklearn.model_selection import train_test_split
 import pandas as pd
@@ -18,11 +19,32 @@ def parse_args():
     parser.add_argument("-i", "--input", required=True, help="Input CSV dataset file")
     parser.add_argument("-l", "--labels", required=True, help = "Input CSV labels file")
     parser.add_argument("-o", "--output", required=True, help="Output folder")
+    parser.add_argument("-giq", "--global-image-quality", action="store_true", help="Use global image quality features")
+    parser.add_argument("-ciq", "--color-image-quality", action="store_true", help="Use color image quality features")
+    parser.add_argument("-coniq", "--content-image-quality", action="store_true", help="Use content image quality features")
+    parser.add_argument("-fiq", "--face-features-quality", action="store_true", help="Use face quality features")
     parser.add_argument("-di", "--debug-images", required=False, help="Debug images")
     parser.add_argument("--force", action="store_true", help="Overwrites output folder if it already exists")
     return parser.parse_args()
 
+#convert string parameters into lists of numerical data
+def string2list(in_str):
+    in_str = in_str[in_str.find("[") + 1:in_str.find("]")]
+    out_list = [float(s) for s in in_str.split(',')]
+    return out_list
 
+def eyes_string2list(in_str):
+    strs = in_str.replace('[', '').split('],')
+    out_list = [list(map(int, s.replace(']', '').split(','))) for s in strs]
+    return out_list
+
+def both_eyes_closed(eyes):
+    eye_list = eyes_string2list(eyes)
+    closed = [1 for eye in eye_list if (eye == [1, 1])]
+    return np.sum(closed)
+
+def eyes_faces_ratio(eyes,faces):
+    return len(eyes)/faces
 #
 # Converts one row of feature.csv table into feature vector
 #
@@ -41,11 +63,42 @@ def row_to_feature_vector(dataFrame, row_id):
     # faces_motion_blur_all
     # closed_eyes
     fv = []
-    fv.append(dataFrame.sharpness[row_id])
-    fv.append(dataFrame.noise[row_id])
-    fv.append(dataFrame.motion_blur[row_id])
-    return fv
 
+    if args.global_image_quality:
+        print("Using global image quality features")
+        fv.append(dataFrame.sharpness[row_id])
+        fv.append(dataFrame.noise[row_id])
+        fv.append(dataFrame.motion_blur[row_id])
+    if args.color_image_quality:
+        print("Using color image quality features")
+        fv.extend(string2list(dataFrame.contrast[row_id]))
+        fv.append(dataFrame.saturation[row_id])
+
+    if args.content_image_quality:
+        print("Using content image quality features")
+        fv.extend(string2list(dataFrame.lines[row_id]))
+        fv.extend(string2list(dataFrame.symmetry[row_id]))
+
+    if args.face_features_quality:
+        print("Using face quality features")
+        fv.append(dataFrame.number_of_faces[row_id])
+        if (dataFrame.number_of_faces[row_id] > 0):
+            fv.append(np.mean(string2list(dataFrame.faces_sharp_all[row_id])))
+            fv.append(np.min(string2list(dataFrame.faces_sharp_all[row_id])))
+            fv.append(np.max(string2list(dataFrame.faces_sharp_all[row_id])))
+        else:
+            fv.extend([0, 0, 0])
+        #number of faces with both eyes closed
+        if (dataFrame.closed_eyes[row_id] != '[]'):
+            fv.append(both_eyes_closed(dataFrame.closed_eyes[row_id]))
+        else:
+            fv.append(0)
+        if (dataFrame.closed_eyes[row_id] != '[]' and dataFrame.number_of_faces[row_id] != 0):
+            fv.append(eyes_faces_ratio(dataFrame.closed_eyes[row_id],dataFrame.number_of_faces[row_id]))
+        else:
+            fv.append(0)
+
+    return fv
 
 #
 # Reads labels CSV into dictonary mapping im_path to (label, set) pair
