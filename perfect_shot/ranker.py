@@ -167,6 +167,24 @@ def sets2pairwise(set_image_samples):
     return Xp, yp
 
 
+def filter_dummy(set_name2image_samples):
+    keys = list(set_name2image_samples.keys())
+    for key in keys:
+        all_0 = True
+        all_1 = True
+        for item in set_name2image_samples[key]:
+            if item.y == 0:
+                all_1 = False
+            else:
+                all_0 = False
+        if all_0:
+            print("Filtering set %s because all images are DISCARD" % key)
+            del set_name2image_samples[key]
+        if all_1:
+            print("Filtering set %s because all images are KEEP" % key)
+            del set_name2image_samples[key]
+
+
 def basic_sort(in_list):
     r = list(in_list)
     for i in range(0, len(r)):
@@ -211,7 +229,9 @@ def dump_errors(set2sorted, debug_images_folder, debug_folder):
             shutil.copyfile(predicted_src, predicted_dst)
 
             for image_sample in image_samples:
+                print(image_sample)
                 if image_sample.y == 1:
+                    print("WRONG")
                     labeled_src = os.path.join(debug_images_folder, image_sample.im_path + "_debug.png")
                     labeled_filename = os.path.basename(labeled_src)
                     labeled_dst = os.path.join(debug_folder, set_name, "lab_" + labeled_filename)
@@ -245,6 +265,7 @@ if __name__ == "__main__":
         # featurize
         feat_df = pd.read_csv(args.input)
         set_name2image_samples = create_sets(feat_df, img2label_and_set)
+        filter_dummy(set_name2image_samples)
         print_sets(set_name2image_samples)
 
 

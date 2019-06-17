@@ -1,8 +1,8 @@
 Namespace(debug_images='/home/kornjacinvrac/perfect_shoot_data/dataset_feat', force=True, input='/home/kornjacinvrac/git/datascience/perfect_shot/dataset/dataset_feat.csv', labels='/home/kornjacinvrac/git/datascience/perfect_shot/dataset/dataset_labels.csv', output='ranker_out/dataset')
 
-train accuracy: 64.35%
-test accuracy: 43.33%
+train accuracy: 61.06%
+test accuracy: 42.93%
 
 
-train top1: 41.86%
-test top1: 39.53%
+train top1: 47.22%
+test top1: 32.43%
