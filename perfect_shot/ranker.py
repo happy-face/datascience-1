@@ -229,9 +229,7 @@ def dump_errors(set2sorted, debug_images_folder, debug_folder):
             shutil.copyfile(predicted_src, predicted_dst)
 
             for image_sample in image_samples:
-                print(image_sample)
                 if image_sample.y == 1:
-                    print("WRONG")
                     labeled_src = os.path.join(debug_images_folder, image_sample.im_path + "_debug.png")
                     labeled_filename = os.path.basename(labeled_src)
                     labeled_dst = os.path.join(debug_folder, set_name, "lab_" + labeled_filename)
