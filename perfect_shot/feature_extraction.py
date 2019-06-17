@@ -22,8 +22,9 @@ from PIL import Image, ImageFilter, ImageOps
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-ip", "--im-path", required=True, help="Path to folder with images")
-    parser.add_argument("-o", "--output", required=True, help="Output folder")
-    parser.add_argument("--force", action="store_true", help="Overwrites output folder if it already exists")
+    parser.add_argument("-do", "--debug-output", required=False, help="Path to output folder with debug immages")
+    parser.add_argument("-o", "--output", required=True, help="Output CSV file")
+    parser.add_argument("--force", action="store_true", help="Overwrites output CSV and debug output folder if it already exists")
     return parser.parse_args()
 
 
@@ -218,7 +219,9 @@ def face_landmarks_detector(img, faces, im_name, out_path):
     output_dir = os.path.dirname(output_path)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    cv2.imwrite(os.path.join(out_path, im_name + '_face_landmarks.png'),image)
+
+    if out_path:
+        cv2.imwrite(os.path.join(out_path, im_name + '_face_landmarks.png'),image)
 
     return face_landmarks
 
@@ -298,12 +301,19 @@ def get_path_recursive(input_folder, file_extensions, paths):
 if __name__ == "__main__":
     args = parse_args()
 
-    #create output folder
+    # check if output file already exists
     if os.path.exists(args.output) and not args.force:
-        print("Output folder %s already exists! Use --force to override this check." % (args.output))
+        print("Output folder %s already exists! Use --force to override this check." % (args.debug_output))
         exit()
-    if not os.path.exists(args.output):
-        os.makedirs(args.output)
+
+
+    # ensure that output folder exists
+    if args.debug_output:
+        if os.path.exists(args.debug_output) and not args.force:
+            print("Output folder %s already exists! Use --force to override this check." % (args.debug_output))
+            exit()
+        if not os.path.exists(args.debug_output):
+            os.makedirs(args.debug_output)
 
     #import image list
     file_extensions = ['.JPG', '.jpg', '.png', '.PNG']
@@ -312,7 +322,6 @@ if __name__ == "__main__":
     im_paths = sorted(im_paths)
 
     df = pd.DataFrame(im_paths, columns=['file_name'])
-
 
     table = []
     for im_path in im_paths:
@@ -347,7 +356,7 @@ if __name__ == "__main__":
                 faces_noise_all.append(face_noise)
                 faces_motionb_all.append(face_motion_blur)
 
-            landmarks = face_landmarks_detector(gray_img, faces, im_path, args.output)
+            landmarks = face_landmarks_detector(gray_img, faces, im_path, args.debug_output)
 
             closed_eyes = closed_eyes_detector(landmarks)
 
