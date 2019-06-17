@@ -15,6 +15,7 @@ import dlib
 from scipy.signal import convolve2d
 from scipy.spatial import distance as dist
 
+from PIL import Image, ImageFilter, ImageOps
 
 
 # construct the argument parser and parse the arguments
@@ -33,42 +34,122 @@ def convertToRGB(img):
 #input image MUST BE GRAYSCALE
 def estimate_general_quality(img):
 
+    def estimate_sharpness(img):
+        img = Image.fromarray(img) #convert to PIL image format
+        img_blur = np.array(img.filter(ImageFilter.BLUR))
+        diffs = np.asfarray(img) - np.asfarray(img_blur)
+        return np.percentile(np.abs(diffs), 98)
 
-    #blur detection (higher number = less blurry)
-    def estimate_blur(img):
-        # compute the Laplacian of the image and then return the focus
-        # measure, which is simply the variance of the Laplacian
-        return cv2.Laplacian(img, cv2.CV_64F).var()
-
-    #noise estimation (lower number == less noise)
     def estimate_noise(img):
-        H, W = img.shape
-        M = [[1, -2, 1],
-             [-2, 4, -2],
-             [1, -2, 1]]
+        img = Image.fromarray(img)
+        # like sharpness, but median filter then subtract instead of blur to reduce impact of edges
+        img_blur = np.array(img.filter(ImageFilter.MedianFilter(3)))
+        diffs = np.asfarray(img) - np.asfarray(img_blur)
+        noise = np.percentile(np.abs(diffs), 98)
+        return noise
 
-        sigma = np.sum(np.sum(np.absolute(convolve2d(img, M))))
-        sigma = sigma * math.sqrt(0.5 * math.pi) / (6 * (W-2) * (H-2))
-        return sigma
+    def estimate_motion_blur(img):
+        img = Image.fromarray(img)
+        # try several difference kernels at different angles, find the one that blurs the image the most
+        kernels = [[0, 0, 0, 1, 0, -1, 0, 0, 0],
+                   [0, 1, 0, 0, 0, 0, 0, -1, 0],
+                   [1, 0, 0, 0, 0, 0, 0, 0, -1],
+                   [0, 0, 1, 0, 0, 0, -1, 0, 0]]
+        min_sharpness = 1000000
+        for ker in kernels:
+            im_edges = img.filter(ImageFilter.Kernel((3, 3), ker, 1, 128))
+            im_edges = np.abs(np.asfarray(im_edges) - 128)
+            sharpness = np.percentile(im_edges, 98)
+            if sharpness < min_sharpness:
+                min_sharpness = sharpness
+        return min_sharpness
 
-    def estimate_brightness(img):
-        histogram = cv2.calcHist([img], [0], None, [256], [0, 256])
-        pixels = sum(histogram)[0]
-        brightness = scale = len(histogram)
-        for index in range(0, scale):
-            ratio = histogram[index][0] / pixels
-            brightness += ratio * (-scale + index)
-        return 1 if brightness == 255 else brightness / scale
 
     resized_img = cv2.resize(img, (512, 512), interpolation=cv2.INTER_NEAREST)
 
-    blur_score = estimate_blur(resized_img)
-    #print("Blurrines of the image: ", blur_score)
+
+    sharpness_score = estimate_sharpness(resized_img)
     noise_score = estimate_noise(resized_img)
     #print("Noise in the image: ", noise_score)
-    bright_score = estimate_brightness(resized_img)
+    motion_blur_score = estimate_motion_blur(resized_img)
     #print("Brightness of the image: ", bright_score)
-    return blur_score, noise_score, bright_score
+    return sharpness_score, noise_score, motion_blur_score
+
+#input has to be a colored image
+def estimate_color_quality(img):
+
+    def estimate_contrast(img):
+        img = np.array(img, dtype='f') * 1. / 255
+        img_hsv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2HSV)
+        h, s, v = np.dsplit(img_hsv, 3)
+        # return mean, stddev, and 80th percentile range of brightness as estimates of contrast
+        return [np.mean(v), np.std(v), np.percentile(v, 90) - np.percentile(v, 10)]
+
+    def estimate_saturation(img):
+        img = np.array(img, dtype='f') * 1. / 255
+        img_hsv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2HSV)
+        h, s, v = np.dsplit(img_hsv, 3)
+        return np.mean(s)
+
+    resized_img = cv2.resize(img, (512, 512), interpolation=cv2.INTER_NEAREST)
+
+    contrast_score = estimate_contrast(resized_img)
+    saturation_score = estimate_saturation(resized_img)
+    return contrast_score, saturation_score
+
+def estimate_composition_quality(img):
+
+    def estimate_lines(img):
+        img = Image.fromarray(img)  # convert to PIL image format
+        # Run Hough transform to find lines in image, compute average angle and spread
+        img_small = img.resize((int(img.size[0] / 2), int(img.size[1] / 2)))
+        edges_bin = cv2.Canny(np.array(img), 100, 300)
+        lines = cv2.HoughLinesP(edges_bin, 1, .02, 10, minLineLength=50, maxLineGap=15)
+        # circular mean
+        if lines is not None and len(lines) > 0 and len(lines[0]) > 0:
+            sum_x = 0
+            sum_y = 0
+            for line in lines[0]:
+                dx, dy = line[2] - line[0], line[3] - line[1]
+                sum_x += dx
+                sum_y += dy
+
+            sum_x /= len(lines[0])
+            sum_y /= len(lines[0])
+            return [np.arctan2(sum_y, sum_x), np.sqrt(sum_x * sum_x + sum_y * sum_y)]  # average angle, concentration
+        else:
+            return [0, 0]
+
+    def estimate_symmetry(img):
+        img = Image.fromarray(img)  # convert to PIL image format
+        # flip image h+v around center and thirds, measure differences
+        img_arr = cv2.equalizeHist(np.array(img))  # normalize first
+
+        horiz_diff = np.sqrt(np.mean(np.power(img_arr - img_arr[::-1, :], 2)))
+        vert_diff = np.sqrt(np.mean(np.power(img_arr - img_arr[:, ::-1], 2)))
+
+        # check thirds
+        # some crops around the third lines
+        img_left = img.crop((0, 0, 2 * img.size[0] / 3, img.size[1]))
+        img_right = img.crop((img.size[0] / 3, 0, img.size[0], img.size[1]))
+        img_top = img.crop((0, 0, img.size[0], 2 * img.size[1] / 3))
+        img_bot = img.crop((0, img.size[1] / 3, img.size[0], img.size[1]))
+
+        max_thirds_symm = 0
+        for im in [img_left, img_right, img_top, img_bot]:
+            im = cv2.equalizeHist(np.array(im))
+            h_diff = np.sqrt(np.mean(np.power(im - im[::-1, :], 2)))
+            v_diff = np.sqrt(np.mean(np.power(im - im[:, ::-1], 2)))
+            max_thirds_symm = max(max_thirds_symm, h_diff, v_diff)
+
+        return [max(horiz_diff, vert_diff), max_thirds_symm]
+
+    resized_img = cv2.resize(img, (512, 512), interpolation=cv2.INTER_NEAREST)
+
+    lines = estimate_lines(resized_img)
+    symmetry = estimate_symmetry(resized_img)
+    return lines, symmetry
+
 
 #must have gray image as input
 def face_detector(img):
@@ -243,25 +324,28 @@ if __name__ == "__main__":
             #convert to gray
             gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-            blur, noise, brightness = estimate_general_quality(gray_img)
+            sharpness, noise, motion_blur = estimate_general_quality(gray_img)
+            contrast, saturation = estimate_color_quality(image)
+            lines, symmetry = estimate_composition_quality(gray_img)
+
             #face region detection
             faces = face_detector(gray_img)
             number_of_faces = len(faces)
 
             #EXTRACT FACE FEATURES
 
-            faces_blur_all = []
+            faces_sharpness_all = []
             faces_noise_all = []
-            faces_brightness_all = []
+            faces_motionb_all = []
 
             for face in faces:
                 # extract face ROI
                 face_roi = get_face_roi(gray_img, face)
-                face_blur, face_noise, face_brightness = estimate_general_quality(face_roi)
+                face_sharp, face_noise, face_motion_blur = estimate_general_quality(face_roi)
 
-                faces_blur_all.append(face_blur)
+                faces_sharpness_all.append(face_sharp)
                 faces_noise_all.append(face_noise)
-                faces_brightness_all.append(face_brightness)
+                faces_motionb_all.append(face_motion_blur)
 
             landmarks = face_landmarks_detector(gray_img, faces, im_path, args.output)
 
@@ -269,14 +353,14 @@ if __name__ == "__main__":
 
             im_set = os.path.split(os.path.dirname(im_path))[-1]
             im_path_csv = os.path.join(im_set, os.path.basename(im_path))
-            table_entry = [im_path_csv, im_set, blur, noise, brightness, faces, number_of_faces, faces_blur_all, faces_noise_all, faces_brightness_all, closed_eyes]
+            table_entry = [im_path_csv, im_set, sharpness, noise, motion_blur, contrast, saturation, lines, symmetry, faces, number_of_faces, faces_sharpness_all, faces_noise_all, faces_motionb_all, closed_eyes]
             table.append(table_entry)
         except Exception as e:
             print("Failed to process: ", im_path)
             print(e)
             print # -*- coding: utf-8 -*-
 
-    df_output = pd.DataFrame(table, columns = ['im_path', 'set_name', 'blur', 'noise', 'brightness', 'faces', 'number_of_faces', 'faces_blur_all', 'faces_noise_all',
-                   'faces_brightness_all', 'closed_eyes'])
+    df_output = pd.DataFrame(table, columns = ['im_path', 'set_name', 'sharpness', 'noise', 'motion_blur', 'contrast', 'saturation', 'lines', 'symmetry', 'faces', 'number_of_faces', 'faces_sharp_all', 'faces_noise_all',
+                   'faces_motion_blur_all', 'closed_eyes'])
 
     df_output.to_csv(os.path.join(args.output, 'results_processed.csv'))
