@@ -31,4 +31,4 @@ pushd $DATA_DIR
 python3 $FEATURIZE_PY -ip $DATASET -do ${DATASET}_feat -o $FEATURE_FILE --force
 popd
 
-python3 ranker.py --input $FEATURE_FILE --labels $LABELS_FILE --output "ranker_out/${RANKER_OUT}" --force
+python3 ranker.py --input $FEATURE_FILE --labels $LABELS_FILE --output "ranker_out/${RANKER_OUT}" -di $DATA_DIR/${DATASET}_feat  --force

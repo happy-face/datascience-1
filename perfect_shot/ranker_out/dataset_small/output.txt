@@ -1,0 +1,8 @@
+Namespace(debug_images='/home/kornjacinvrac/perfect_shoot_data/dataset_small_feat', force=True, input='/home/kornjacinvrac/git/datascience/perfect_shot/dataset/dataset_small_feat.csv', labels='/home/kornjacinvrac/git/datascience/perfect_shot/dataset/dataset_small_labels.csv', output='ranker_out/dataset_small')
+
+train accuracy: 63.33%
+test accuracy: 61.54%
+
+
+train top1: 20.00%
+test top1: 40.00%

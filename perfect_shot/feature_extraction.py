@@ -7,6 +7,7 @@ import pandas as pd
 import math
 import cv2
 import csv
+import traceback
 
 from imutils import face_utils
 import imutils
@@ -168,15 +169,15 @@ def face_detector(img):
     return faces
 
 #gray image as input!!!
-def face_landmarks_detector(img, faces, im_name, out_path):
+def face_landmarks_detector(img, faces, im_name):
 
     # create the facial landmark predictor
     python_script_dir = os.path.dirname(os.path.realpath(__file__))
     predictor = dlib.shape_predictor(os.path.join(python_script_dir, 'shape_predictor_68_face_landmarks.dat'))
 
-    img_height, img_width = img.shape
-    tickness = int(round(max(img_height, img_width) / 512));
-    font_scale = 0.5 * tickness
+    # img_height, img_width = img.shape
+    # tickness = int(round(max(img_height, img_width) / 512));
+    # font_scale = 0.5 * tickness
 
     face_landmarks = []
 
@@ -187,17 +188,17 @@ def face_landmarks_detector(img, faces, im_name, out_path):
         shape = predictor(img, rect)
         shape = face_utils.shape_to_np(shape)
 
-        (x, y, w, h) = face_utils.rect_to_bb(rect)
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), tickness)
-
-        # show the face number
-        cv2.putText(image, "Face #{}".format(i + 1), (x - 10, y - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 255, 0), tickness)
-
-        # loop over the (x, y)-coordinates for the facial landmarks
-        # and draw them on the image
-        for (x, y) in shape:
-            cv2.circle(image, (x, y), 1, (0, 0, 255), tickness)
+        # (x, y, w, h) = face_utils.rect_to_bb(rect)
+        # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), tickness)
+        #
+        # # show the face number
+        # cv2.putText(image, "Face #{}".format(i + 1), (x - 10, y - 10),
+        #             cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 255, 0), tickness)
+        #
+        # # loop over the (x, y)-coordinates for the facial landmarks
+        # # and draw them on the image
+        # for (x, y) in shape:
+        #     cv2.circle(image, (x, y), 1, (0, 0, 255), tickness)
 
         face_landmarks.append(shape)
 
@@ -215,13 +216,13 @@ def face_landmarks_detector(img, faces, im_name, out_path):
 #    cv2.imshow("Output", disp_img)
 #    cv2.waitKey(0)
 
-    output_path = os.path.join(out_path, im_name + '_face_landmarks.png')
-    output_dir = os.path.dirname(output_path)
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    if out_path:
-        cv2.imwrite(os.path.join(out_path, im_name + '_face_landmarks.png'),image)
+    # output_path = os.path.join(out_path, im_name + '_face_landmarks.png')
+    # output_dir = os.path.dirname(output_path)
+    # if not os.path.exists(output_dir):
+    #     os.makedirs(output_dir)
+    #
+    # if out_path:
+    #     cv2.imwrite(os.path.join(out_path, im_name + '_face_landmarks.png'),image)
 
     return face_landmarks
 
@@ -298,6 +299,58 @@ def get_path_recursive(input_folder, file_extensions, paths):
 #            get_path_recursive(os.path.join(root, subdir), file_extensions, paths)
 
 
+
+#gray image as input!!!
+def debug_image(img, faces, face_landmarks, debug_str, im_name, out_path):
+    img_height, img_width, colors = img.shape
+    tickness = int(round(max(img_height, img_width) / 512));
+    font_scale = 0.5 * tickness
+
+    # plot rectangle and face number
+    for (i,rect) in enumerate(faces):
+        (x, y, w, h) = face_utils.rect_to_bb(rect)
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), tickness)
+        cv2.putText(image, "Face #{}".format(i + 1), (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 255, 0), tickness)
+
+    # plot face landmarks
+    for one_face_landmarks in face_landmarks:
+        for (x, y) in one_face_landmarks:
+            cv2.circle(image, (x, y), 1, (0, 0, 255), tickness)
+
+    # output debug string in top left corner
+    debug_str_y = 100
+    for one_debug_str in debug_str:
+        cv2.putText(image, one_debug_str, (50, debug_str_y), cv2.FONT_HERSHEY_SIMPLEX, font_scale * 0.75, (0, 255, 0), int(tickness * 0.75))
+        debug_str_y += int(28 * font_scale)
+
+    output_path = os.path.join(out_path, im_name + '_debug.png')
+    output_dir = os.path.dirname(output_path)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    if out_path:
+        cv2.imwrite(os.path.join(out_path, im_name + '_debug.png'),image)
+
+
+def debug_list_str(x):
+    debug_str = "[ "
+    for i in range(0, len(x)):
+        debug_str += "%.1f" % x[i]
+        if i != len(x) - 1:
+            debug_str += ", "
+    debug_str += " ]"
+    return debug_str
+
+def debug_list_list_str(x):
+    debug_str = "[ "
+    for i in range(0, len(x)):
+        debug_str += "%s" % debug_list_str(x[i])
+        if i != len(x) - 1:
+            debug_str += ", "
+    debug_str += " ]"
+    return debug_str
+
+
 if __name__ == "__main__":
     args = parse_args()
 
@@ -356,17 +409,34 @@ if __name__ == "__main__":
                 faces_noise_all.append(face_noise)
                 faces_motionb_all.append(face_motion_blur)
 
-            landmarks = face_landmarks_detector(gray_img, faces, im_path, args.debug_output)
-
-            closed_eyes = closed_eyes_detector(landmarks)
+            face_landmarks = face_landmarks_detector(gray_img, faces, im_path)
+            closed_eyes = closed_eyes_detector(face_landmarks)
 
             im_set = os.path.split(os.path.dirname(im_path))[-1]
             im_path_csv = os.path.join(im_set, os.path.basename(im_path))
             table_entry = [im_path_csv, im_set, sharpness, noise, motion_blur, contrast, saturation, lines, symmetry, faces, number_of_faces, faces_sharpness_all, faces_noise_all, faces_motionb_all, closed_eyes]
             table.append(table_entry)
-        except Exception as e:
+
+            debug_str = []
+            debug_str.append("shr: %.1f" % sharpness)
+            debug_str.append("nse: %.1f" % noise)
+            debug_str.append("mblr: %.1f" % motion_blur)
+            debug_str.append("cnt: %s" % debug_list_str(contrast))
+            debug_str.append("str: %.1f" % saturation)
+            debug_str.append("ln: %s" % debug_list_str(lines))
+            debug_str.append("sym: %s" % debug_list_str(symmetry))
+            debug_str.append("nfac: %.1f" % number_of_faces)
+            debug_str.append("fshr: %s" % debug_list_str(faces_sharpness_all))
+            debug_str.append("fmblr: %s" % debug_list_str(faces_motionb_all))
+            debug_str.append("cleye: %s" % debug_list_list_str(closed_eyes))
+            debug_image(image, faces, face_landmarks, debug_str, im_path_csv, args.debug_output)
+
+        except KeyboardInterrupt:
+            exit(-1)
+
+        except:
             print("Failed to process: ", im_path)
-            print(e)
+            traceback.print_exc()
             print # -*- coding: utf-8 -*-
 
     df_output = pd.DataFrame(table, columns = ['im_path', 'set_name', 'sharpness', 'noise', 'motion_blur', 'contrast', 'saturation', 'lines', 'symmetry', 'faces', 'number_of_faces', 'faces_sharp_all', 'faces_noise_all',

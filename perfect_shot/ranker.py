@@ -8,7 +8,8 @@ import cv2
 from sklearn import svm, linear_model
 from sklearn.model_selection import train_test_split
 import pandas as pd
-
+from sys import stdout
+import shutil
 
 
 # construct the argument parser and parse the arguments
@@ -17,6 +18,7 @@ def parse_args():
     parser.add_argument("-i", "--input", required=True, help="Input CSV dataset file")
     parser.add_argument("-l", "--labels", required=True, help = "Input CSV labels file")
     parser.add_argument("-o", "--output", required=True, help="Output folder")
+    parser.add_argument("-di", "--debug-images", required=False, help="Debug images")
     parser.add_argument("--force", action="store_true", help="Overwrites output folder if it already exists")
     return parser.parse_args()
 
@@ -195,7 +197,30 @@ def write_ranker_output_file(file_path, set2sorted):
                 out_file.write("\n")
 
 
+def dump_errors(set2sorted, debug_images_folder, debug_folder):
+    os.makedirs(debug_folder)
+    for set_name, image_samples in set2sorted.items():
+        set_name = str(set_name)
+        if image_samples[0].y == 0:
+            set_folder = os.path.join(debug_folder, set_name)
+            os.makedirs(set_folder)
+
+            predicted_src = os.path.join(debug_images_folder, image_samples[0].im_path + "_debug.png")
+            predicted_filename = os.path.basename(predicted_src)
+            predicted_dst = os.path.join(debug_folder, set_name, "pred_" + predicted_filename)
+            shutil.copyfile(predicted_src, predicted_dst)
+
+            for image_sample in image_samples:
+                if image_sample.y == 1:
+                    labeled_src = os.path.join(debug_images_folder, image_sample.im_path + "_debug.png")
+                    labeled_filename = os.path.basename(labeled_src)
+                    labeled_dst = os.path.join(debug_folder, set_name, "lab_" + labeled_filename)
+                    shutil.copyfile(labeled_src, labeled_dst)
+
+
 label2id = {"discard": 0, "keep": 1}
+
+
 
 
 if __name__ == "__main__":
@@ -207,51 +232,65 @@ if __name__ == "__main__":
     if os.path.exists(args.output) and not args.force:
         print("Output folder %s already exists! Use --force to override this check." % (args.output))
         exit()
-    if not os.path.exists(args.output):
-        os.makedirs(args.output)
+    if os.path.exists(args.output):
+        shutil.rmtree(args.output)
+    os.makedirs(args.output)
 
-    # load labels
-    img2label_and_set = read_labels(args.labels, label2id)
+    with open(os.path.join(args.output, "output.txt"), "w") as output_file:
+        output_file.write(str(args))
 
-    # featurize
-    feat_df = pd.read_csv(args.input)
-    set_name2image_samples = create_sets(feat_df, img2label_and_set)
-    print_sets(set_name2image_samples)
+        # load labels
+        img2label_and_set = read_labels(args.labels, label2id)
 
-    # training/test split
-    set_image_sample_items = list(set_name2image_samples.items())
-    train, test = train_test_split(set_image_sample_items, test_size=0.5)
-
-    # transform training into pairwise classification problem
-    Xp_train, yp_train = sets2pairwise(train)
-    Xp_test, yp_test = sets2pairwise(test)
-
-    clf = svm.SVC(kernel='linear', C=.1, verbose=True)
-    clf.fit(Xp_train, yp_train)
-    print()
-    print()
-    print("train accuracy: %.2f%%" % (100.0 * clf.score(Xp_train, yp_train)))
-    print("test accuracy: %.2f%%" % (100.0 * clf.score(Xp_test, yp_test)))
+        # featurize
+        feat_df = pd.read_csv(args.input)
+        set_name2image_samples = create_sets(feat_df, img2label_and_set)
+        print_sets(set_name2image_samples)
 
 
-    # set reference to classifier so that we can use comparison methods on ImageSample
-    ImageSample.clf = clf
+        # training/test split
+        set_image_sample_items = list(set_name2image_samples.items())
+        train, test = train_test_split(set_image_sample_items, test_size=0.5)
 
-    # rank all sets in training
-    set2sorted_train = {}
-    for set_name, image_samples in train:
-        set2sorted_train[set_name] = sorted(image_samples, reverse=True)
+        # transform training into pairwise classification problem
+        Xp_train, yp_train = sets2pairwise(train)
+        Xp_test, yp_test = sets2pairwise(test)
 
-    #rank all sets in test
-    set2sorted_test = {}
-    for set_name, image_samples in test:
-        set2sorted_test[set_name] = sorted(image_samples, reverse=True)
+        clf = svm.SVC(kernel='linear', C=.1, verbose=True)
+        clf.fit(Xp_train, yp_train)
+        stdout.write("\n\n")
+        stdout.write("train accuracy: %.2f%%\n" % (100.0 * clf.score(Xp_train, yp_train)))
+        stdout.write("test accuracy: %.2f%%\n" % (100.0 * clf.score(Xp_test, yp_test)))
+        output_file.write("\n\n")
+        output_file.write("train accuracy: %.2f%%\n" % (100.0 * clf.score(Xp_train, yp_train)))
+        output_file.write("test accuracy: %.2f%%\n" % (100.0 * clf.score(Xp_test, yp_test)))
 
-    # write ranked sets to output input_folder
-    write_ranker_output_file(os.path.join(args.output, "ranked_test.txt"), set2sorted_test)
-    write_ranker_output_file(os.path.join(args.output, "ranked_train.txt"), set2sorted_train)
 
-    print()
-    print()
-    print("train top1: %.2f%%" % (100 * score_top_1(set2sorted_train)))
-    print("test top1: %.2f%%" % (100 * score_top_1(set2sorted_test)))
+        # set reference to classifier so that we can use comparison methods on ImageSample
+        ImageSample.clf = clf
+
+        # rank all sets in training
+        set2sorted_train = {}
+        for set_name, image_samples in train:
+            set2sorted_train[set_name] = sorted(image_samples, reverse=True)
+
+        #rank all sets in test
+        set2sorted_test = {}
+        for set_name, image_samples in test:
+            set2sorted_test[set_name] = sorted(image_samples, reverse=True)
+
+        # write ranked sets to output input_folder
+        write_ranker_output_file(os.path.join(args.output, "ranked_test.txt"), set2sorted_test)
+        write_ranker_output_file(os.path.join(args.output, "ranked_train.txt"), set2sorted_train)
+
+        stdout.write("\n\n")
+        stdout.write("train top1: %.2f%%\n" % (100 * score_top_1(set2sorted_train)))
+        stdout.write("test top1: %.2f%%\n" % (100 * score_top_1(set2sorted_test)))
+        output_file.write("\n\n")
+        output_file.write("train top1: %.2f%%\n" % (100 * score_top_1(set2sorted_train)))
+        output_file.write("test top1: %.2f%%\n" % (100 * score_top_1(set2sorted_test)))
+
+        # collect correct / incorrect classification pairs
+        if args.debug_images:
+            dump_errors(set2sorted_test, args.debug_images, os.path.join(args.output, "test_debug"))
+            dump_errors(set2sorted_train, args.debug_images, os.path.join(args.output, "train_debug"))
