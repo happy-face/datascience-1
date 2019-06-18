@@ -8,9 +8,12 @@ import cv2
 import numpy as np
 from sklearn import svm, linear_model
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 from sys import stdout
 import shutil
+
+
 
 
 # construct the argument parser and parse the arguments
@@ -23,6 +26,8 @@ def parse_args():
     parser.add_argument("-ciq", "--color-image-quality", action="store_true", help="Use color image quality features")
     parser.add_argument("-coniq", "--content-image-quality", action="store_true", help="Use content image quality features")
     parser.add_argument("-fiq", "--face-features-quality", action="store_true", help="Use face quality features")
+    parser.add_argument("-svm", "--support-vector-machine", action="store_true", help="Use support vector machine classifier")
+    parser.add_argument("-rfc", "--random-forest-classifier", action="store_true", help="Use random forest classifier")
     parser.add_argument("-di", "--debug-images", required=False, help="Debug images")
     parser.add_argument("--force", action="store_true", help="Overwrites output folder if it already exists")
     return parser.parse_args()
@@ -328,8 +333,16 @@ if __name__ == "__main__":
         Xp_train, yp_train = sets2pairwise(train)
         Xp_test, yp_test = sets2pairwise(test)
 
-        clf = svm.SVC(kernel='linear', C=.1, verbose=True)
-        clf.fit(Xp_train, yp_train)
+        if args.support_vector_machine:
+            print("Train support vector machine with linear kernel")
+            clf = svm.SVC(kernel='linear', C=.1, verbose=True)
+            clf.fit(Xp_train, yp_train)
+
+        if args.random_forest_classifier:
+            print("Train random forest classifier")
+            clf = RandomForestClassifier(n_estimators=200)
+            clf.fit(Xp_train, yp_train)
+
         stdout.write("\n\n")
         stdout.write("train accuracy: %.2f%%\n" % (100.0 * clf.score(Xp_train, yp_train)))
         stdout.write("test accuracy: %.2f%%\n" % (100.0 * clf.score(Xp_test, yp_test)))
