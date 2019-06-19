@@ -12,7 +12,7 @@ from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 from sys import stdout
 import shutil
-
+import pickle
 
 
 
@@ -31,6 +31,18 @@ def parse_args():
     parser.add_argument("-di", "--debug-images", required=False, help="Debug images")
     parser.add_argument("--force", action="store_true", help="Overwrites output folder if it already exists")
     return parser.parse_args()
+
+
+#serialization of the model
+def store_model(path, image_featurizer, classifier, image2label_and_set):
+
+    model = {"featurizer": image_featurizer}
+    model["featurizer"] = model
+    model["classifier"] = classifier
+    model["image2label_and_set"] = image2label_and_set
+    with open(path, 'wb') as file:
+        pickle.dump(model, file)
+
 
 #convert string parameters into lists of numerical data
 def string2list(in_str):
@@ -350,6 +362,9 @@ if __name__ == "__main__":
         output_file.write("train accuracy: %.2f%%\n" % (100.0 * clf.score(Xp_train, yp_train)))
         output_file.write("test accuracy: %.2f%%\n" % (100.0 * clf.score(Xp_test, yp_test)))
 
+        # store current model
+        model_path = os.path.join(args.output, "model.pickle")
+        store_model(model_path, set_image_sample_items, clf, img2label_and_set)
 
         # set reference to classifier so that we can use comparison methods on ImageSample
         ImageSample.clf = clf
