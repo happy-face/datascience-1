@@ -26,9 +26,15 @@ fi
 # COPY LABELS, WE CONSIDER THAT DATADIR HAS CORRECT LABELS
 cp $DATA_DIR/$LABELS $LABELS_FILE
 
-# FEATURIZATION
-pushd $DATA_DIR
-python3 $FEATURIZE_PY -ip $DATASET -do ${DATASET}_feat -o $FEATURE_FILE --force
-popd
+# # FEATURIZATION
+# pushd $DATA_DIR
+# python3 $FEATURIZE_PY -ip $DATASET -do ${DATASET}_feat -o $FEATURE_FILE --force
+# popd
 
-python3 ranker.py --input $FEATURE_FILE --labels $LABELS_FILE --output "ranker_out/${RANKER_OUT}" -di $DATA_DIR/${DATASET}_feat  --force
+python3 ranker.py --input $FEATURE_FILE --labels $LABELS_FILE --force \
+    -svm \
+    --global-image-quality \
+    --color-image-quality \
+    --content-image-quality \
+    --face-features-quality \
+    --output "ranker_out/${RANKER_OUT}"

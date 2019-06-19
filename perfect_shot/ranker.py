@@ -8,11 +8,14 @@ import cv2
 import numpy as np
 from sklearn import svm, linear_model
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 from sys import stdout
 import shutil
 import pickle
+
+from sklearn.preprocessing import StandardScaler
 
 
 
@@ -135,6 +138,7 @@ def read_labels(path, label2id):
 #
 class ImageSample:
     clf = None
+    scaler = None
 
     def __init__(self, X, y, im_path):
         self.X = X
@@ -151,13 +155,13 @@ class ImageSample:
         return True
 
     def __lt__(self, other):
-        return ImageSample.clf.predict([self.X + other.X])[0] == -1
+        return ImageSample.clf.predict(ImageSample.scaler.transform([self.X + other.X]))[0] == -1
 
     def __le__(self, other):
         return self.__lt__(other)
 
     def __gt__(self, other):
-        return ImageSample.clf.predict([self.X + other.X])[0] == 1
+        return ImageSample.clf.predict(ImageSample.scaler.transform([self.X + other.X]))[0] == 1
 
     def __ge__(self, other):
         return self.__gt__(other)
@@ -339,21 +343,40 @@ if __name__ == "__main__":
 
         # training/test split
         set_image_sample_items = list(set_name2image_samples.items())
-        train, test = train_test_split(set_image_sample_items, test_size=0.5)
+        train, test = train_test_split(set_image_sample_items, test_size=0.3)
 
         # transform training into pairwise classification problem
         Xp_train, yp_train = sets2pairwise(train)
         Xp_test, yp_test = sets2pairwise(test)
 
+        scaler = StandardScaler()
+        print(scaler.fit(Xp_train))
+        Xp_train = scaler.transform(Xp_train)
+        Xp_test = scaler.transform(Xp_test)
+
         if args.support_vector_machine:
-            print("Train support vector machine with linear kernel")
-            clf = svm.SVC(kernel='linear', C=.1, verbose=True)
-            clf.fit(Xp_train, yp_train)
+            clf = svm.SVC(verbose=True)
+            parameters = { 'kernel': ('linear', 'rbf'), 'C': [100.0, 10.0, 1.0, 0.1] }
+
+            # iid = True : use average across folds as selection criteria
+            # refit = True : fit model on all data after getting best parameters with CV
+            gridSearch = GridSearchCV(clf, parameters, scoring='accuracy', iid=True, refit=True, n_jobs=8, cv = 5)
+            gridSearch.fit(Xp_train, yp_train)
+            classifier_details = "best_params = " + str(gridSearch.best_params_)
+            print(classifier_details)
+            clf = gridSearch.best_estimator_
 
         if args.random_forest_classifier:
-            print("Train random forest classifier")
-            clf = RandomForestClassifier(n_estimators=200)
-            clf.fit(Xp_train, yp_train)
+            clf = RandomForestClassifier()
+            parameters = { 'n_estimators': [200], 'max_features': [0.1, 0.2, 0.3], 'max_depth': [3, 5, 10, 20, 40, 80] }
+
+            # iid = True : use average across folds as selection criteria
+            # refit = True : fit model on all data after getting best parameters with CV
+            gridSearch = GridSearchCV(clf, parameters, scoring='accuracy', iid=True, refit=True, n_jobs=8, cv = 5)
+            gridSearch.fit(Xp_train, yp_train)
+            classifier_details = "best_params = " + str(gridSearch.best_params_)
+            print(classifier_details)
+            clf = gridSearch.best_estimator_
 
         stdout.write("\n\n")
         stdout.write("train accuracy: %.2f%%\n" % (100.0 * clf.score(Xp_train, yp_train)))
@@ -368,6 +391,7 @@ if __name__ == "__main__":
 
         # set reference to classifier so that we can use comparison methods on ImageSample
         ImageSample.clf = clf
+        ImageSample.scaler = scaler
 
         # rank all sets in training
         set2sorted_train = {}
