@@ -1,8 +1,1 @@
-Namespace(debug_images='/home/kornjacinvrac/perfect_shoot_data/dataset_feat', force=True, input='/home/kornjacinvrac/git/datascience/perfect_shot/dataset/dataset_feat.csv', labels='/home/kornjacinvrac/git/datascience/perfect_shot/dataset/dataset_labels.csv', output='ranker_out/dataset')
-
-train accuracy: 61.06%
-test accuracy: 42.93%
-
-
-train top1: 47.22%
-test top1: 32.43%
+Namespace(color_image_quality=False, content_image_quality=False, debug_images='/home/kornjacinvrac/perfect_shoot_data/dataset_feat', face_features_quality=False, force=True, global_image_quality=False, input='/home/kornjacinvrac/git/datascience/perfect_shot/dataset/dataset_feat.csv', labels='/home/kornjacinvrac/git/datascience/perfect_shot/dataset/dataset_labels.csv', output='ranker_out/dataset', random_forest_classifier=False, support_vector_machine=False)
