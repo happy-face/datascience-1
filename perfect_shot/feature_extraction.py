@@ -162,12 +162,15 @@ def face_detector(img):
 
     # detect faces in the grayscale image
     faces = detector(img, 1)
-    #print('Faces found: ', len(faces))
+    if len(faces) < 1:
+        for angle in np.arange(90, 360, 90):
+            print("rot angle: ", angle)
+            rotated = imutils.rotate_bound(img, angle)
+            faces = detector(rotated, 1)
+            if len(faces) > 0:
+                return faces, angle, rotated
 
-    #if len(faces) == 0:
-    #    print('No faces detected')
-
-    return faces
+    return faces, 0, img
 
 #gray image as input!!!
 def face_landmarks_detector(img, faces, im_name):
@@ -175,10 +178,6 @@ def face_landmarks_detector(img, faces, im_name):
     # create the facial landmark predictor
     python_script_dir = os.path.dirname(os.path.realpath(__file__))
     predictor = dlib.shape_predictor(os.path.join(python_script_dir, 'shape_predictor_68_face_landmarks.dat'))
-
-    # img_height, img_width = img.shape
-    # tickness = int(round(max(img_height, img_width) / 512));
-    # font_scale = 0.5 * tickness
 
     face_landmarks = []
 
@@ -189,41 +188,7 @@ def face_landmarks_detector(img, faces, im_name):
         shape = predictor(img, rect)
         shape = face_utils.shape_to_np(shape)
 
-        # (x, y, w, h) = face_utils.rect_to_bb(rect)
-        # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), tickness)
-        #
-        # # show the face number
-        # cv2.putText(image, "Face #{}".format(i + 1), (x - 10, y - 10),
-        #             cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 255, 0), tickness)
-        #
-        # # loop over the (x, y)-coordinates for the facial landmarks
-        # # and draw them on the image
-        # for (x, y) in shape:
-        #     cv2.circle(image, (x, y), 1, (0, 0, 255), tickness)
-
         face_landmarks.append(shape)
-
-#    # show the output image with the face detections
-#    if img_width > 1024:
-#        disp_img_width = 1024
-#        disp_img_heigh = int(disp_img_width * (float(img_height) / img_width))
-#    elif img_height > 768:
-#        disp_img_heigh = 768
-#        disp_img_width = int(disp_img_heigh * (float(img_width) / img_height))
-#    else:
-#        disp_img_width = img_width
-#        disp_img_heigh = img_height
-#    disp_img = cv2.resize(image, (disp_img_width, disp_img_heigh))
-#    cv2.imshow("Output", disp_img)
-#    cv2.waitKey(0)
-
-    # output_path = os.path.join(out_path, im_name + '_face_landmarks.png')
-    # output_dir = os.path.dirname(output_path)
-    # if not os.path.exists(output_dir):
-    #     os.makedirs(output_dir)
-    #
-    # if out_path:
-    #     cv2.imwrite(os.path.join(out_path, im_name + '_face_landmarks.png'),image)
 
     return face_landmarks
 
@@ -243,6 +208,28 @@ def eye_aspect_ratio(eye):
 
     # return the eye aspect ratio
     return ear
+
+
+def eye_ear(face_shapes):
+    eye_ear_list = []
+
+    # grab the indexes of the facial landmarks for the left and
+    # right eye
+    (lStart, lEnd) = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]
+    (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]
+
+    for (i,shape) in enumerate(face_shapes):
+        # extract the left and right eye coordinates
+        leftEye = shape[lStart:lEnd]
+        rightEye = shape[rStart:rEnd]
+
+        # compute the eye aspect ratio for both eyes
+        leftEAR = eye_aspect_ratio(leftEye)
+        rightEAR = eye_aspect_ratio(rightEye)
+
+        eye_ear_list.append((leftEAR, rightEAR))
+
+    return eye_ear_list
 
 
 def closed_eyes_detector(face_shapes):
@@ -302,7 +289,10 @@ def get_path_recursive(input_folder, file_extensions, paths):
 
 
 #gray image as input!!!
-def debug_image(img, faces, face_landmarks, debug_str, im_name, out_path):
+def debug_image(img, angle, faces, face_landmarks, debug_str, im_name, out_path):
+    if angle != 0:
+        img = imutils.rotate_bound(img, angle)
+
     img_height, img_width, colors = img.shape
     tickness = int(round(max(img_height, img_width) / 512));
     font_scale = 0.5 * tickness
@@ -310,18 +300,18 @@ def debug_image(img, faces, face_landmarks, debug_str, im_name, out_path):
     # plot rectangle and face number
     for (i,rect) in enumerate(faces):
         (x, y, w, h) = face_utils.rect_to_bb(rect)
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), tickness)
-        cv2.putText(image, "Face #{}".format(i + 1), (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 255, 0), tickness)
+        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), tickness)
+        cv2.putText(img, "Face #{}".format(i + 1), (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 255, 0), tickness)
 
     # plot face landmarks
     for one_face_landmarks in face_landmarks:
         for (x, y) in one_face_landmarks:
-            cv2.circle(image, (x, y), 1, (0, 0, 255), tickness)
+            cv2.circle(img, (x, y), 1, (0, 0, 255), tickness)
 
     # output debug string in top left corner
     debug_str_y = 100
     for one_debug_str in debug_str:
-        cv2.putText(image, one_debug_str, (50, debug_str_y), cv2.FONT_HERSHEY_SIMPLEX, font_scale * 0.75, (0, 255, 0), int(tickness * 0.75))
+        cv2.putText(img, one_debug_str, (50, debug_str_y), cv2.FONT_HERSHEY_SIMPLEX, font_scale * 0.75, (0, 255, 0), int(tickness * 0.75))
         debug_str_y += int(28 * font_scale)
 
     output_path = os.path.join(out_path, im_name + '_debug.png')
@@ -330,7 +320,7 @@ def debug_image(img, faces, face_landmarks, debug_str, im_name, out_path):
         os.makedirs(output_dir)
 
     if out_path:
-        cv2.imwrite(os.path.join(out_path, im_name + '_debug.png'),image)
+        cv2.imwrite(os.path.join(out_path, im_name + '_debug.png'),img)
 
 
 def debug_list_str(x):
@@ -392,7 +382,7 @@ if __name__ == "__main__":
             lines, symmetry = estimate_composition_quality(gray_img)
 
             #face region detection
-            faces = face_detector(gray_img)
+            faces, angle, face_img = face_detector(gray_img)
             number_of_faces = len(faces)
 
             #EXTRACT FACE FEATURES
@@ -403,19 +393,19 @@ if __name__ == "__main__":
 
             for face in faces:
                 # extract face ROI
-                face_roi = get_face_roi(gray_img, face)
+                face_roi = get_face_roi(face_img, face)
                 face_sharp, face_noise, face_motion_blur = estimate_general_quality(face_roi)
 
                 faces_sharpness_all.append(face_sharp)
                 faces_noise_all.append(face_noise)
                 faces_motionb_all.append(face_motion_blur)
 
-            face_landmarks = face_landmarks_detector(gray_img, faces, im_path)
-            closed_eyes = closed_eyes_detector(face_landmarks)
+            face_landmarks = face_landmarks_detector(face_img, faces, im_path)
+            eye_ear_list = eye_ear(face_landmarks)
 
             im_set = os.path.split(os.path.dirname(im_path))[-1]
             im_path_csv = os.path.join(im_set, os.path.basename(im_path))
-            table_entry = [im_path_csv, im_set, sharpness, noise, motion_blur, contrast, saturation, lines, symmetry, faces, number_of_faces, faces_sharpness_all, faces_noise_all, faces_motionb_all, closed_eyes]
+            table_entry = [im_path_csv, im_set, sharpness, noise, motion_blur, contrast, saturation, lines, symmetry, faces, number_of_faces, faces_sharpness_all, faces_noise_all, faces_motionb_all, eye_ear_list]
             table.append(table_entry)
 
             debug_str = []
@@ -429,8 +419,8 @@ if __name__ == "__main__":
             debug_str.append("nfac: %.1f" % number_of_faces)
             debug_str.append("fshr: %s" % debug_list_str(faces_sharpness_all))
             debug_str.append("fmblr: %s" % debug_list_str(faces_motionb_all))
-            debug_str.append("cleye: %s" % debug_list_list_str(closed_eyes))
-            debug_image(image, faces, face_landmarks, debug_str, im_path_csv, args.debug_output)
+            debug_str.append("cleye: %s" % debug_list_list_str(eye_ear_list))
+            debug_image(image, angle, faces, face_landmarks, debug_str, im_path_csv, args.debug_output)
 
         except KeyboardInterrupt:
             exit(-1)
@@ -441,6 +431,6 @@ if __name__ == "__main__":
             print # -*- coding: utf-8 -*-
 
     df_output = pd.DataFrame(table, columns = ['im_path', 'set_name', 'sharpness', 'noise', 'motion_blur', 'contrast', 'saturation', 'lines', 'symmetry', 'faces', 'number_of_faces', 'faces_sharp_all', 'faces_noise_all',
-                   'faces_motion_blur_all', 'closed_eyes'])
+                   'faces_motion_blur_all', 'eye_ear_list'])
 
     df_output.to_csv(os.path.join(args.output))

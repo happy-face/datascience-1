@@ -34,7 +34,7 @@ def face_detector(img):
 def face_landmarks_detector(img, faces):
 
     # create the facial landmark predictor
-    predictor = dlib.shape_predictor('/home/ivana/gitrepo/datascience/perfect_shot/shape_predictor_68_face_landmarks.dat')
+    predictor = dlib.shape_predictor('../shape_predictor_68_face_landmarks.dat')
 
     img_height, img_width, img_depth = img.shape
     tickness = int(round(max(img_height, img_width) / 512));
@@ -51,18 +51,18 @@ def face_landmarks_detector(img, faces):
 
         (x, y, w, h) = face_utils.rect_to_bb(rect)
 
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), tickness)
+        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), tickness)
         print(x)
 
 
         # show the face number
-        cv2.putText(image, "Face #{}".format(i + 1), (x - 10, y - 10),
+        cv2.putText(img, "Face #{}".format(i + 1), (x - 10, y - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 255, 0), tickness)
 
         # loop over the (x, y)-coordinates for the facial landmarks
         # and draw them on the image
         for (x, y) in shape:
-            cv2.circle(image, (x, y), 1, (0, 0, 255), tickness)
+            cv2.circle(img, (x, y), 1, (0, 0, 255), tickness)
 
         face_landmarks.append(shape)
 
@@ -116,11 +116,11 @@ gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 # loop over the rotation angles again
 # rotate bound ensures no part of the image is cut off
-for angle in np.arange(0, 360, 30):
+for angle in np.arange(0, 360, 90):
 	rotated = imutils.rotate_bound(image, angle)
-	cv2.imshow("Rotated (Correct)", rotated)
 	faces = face_detector(rotated)
 	face_landmarks = face_landmarks_detector(rotated, faces)
+	cv2.imshow("Rotated (Correct)", rotated)
 	number_of_faces = len(faces)
 	print(number_of_faces)
 	cv2.waitKey(0)
