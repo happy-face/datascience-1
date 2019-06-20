@@ -58,6 +58,33 @@ def eyes_string2list(in_str):
     out_list = [list(map(int, s.replace(']', '').split(','))) for s in strs]
     return out_list
 
+def closed_eyes_detector(eyes_ear_list):
+
+    EYE_AR_THRESH = 0.1
+
+    closed_eyes_in_image = []
+    for eye_ear in eyes_ear_list:
+
+        closed_eye = []
+
+        if eye_ear[0] > EYE_AR_THRESH:
+            eye_closed = 0
+        else:
+            eye_closed = 1
+
+        closed_eye.append(eye_closed)
+
+        if eye_ear[1] > EYE_AR_THRESH:
+            eye_closed = 0
+        else:
+            eye_closed = 1
+
+        closed_eye.append(eye_closed)
+        closed_eyes_in_image.append(closed_eye)
+
+    return closed_eyes_in_image
+
+
 def both_eyes_closed(eyes):
     eye_list = eyes_string2list(eyes)
     closed = [1 for eye in eye_list if (eye == [1, 1])]
