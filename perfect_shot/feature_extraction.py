@@ -29,6 +29,13 @@ def parse_args():
     return parser.parse_args()
 
 
+# create the facial landmark predictor
+python_script_dir = os.path.dirname(os.path.realpath(__file__))
+face_features_predictor = dlib.shape_predictor(os.path.join(python_script_dir, 'shape_predictor_68_face_landmarks.dat'))
+
+# initialize dlib's face detector (HOG-based)
+face_detector = dlib.get_frontal_face_detector()
+
 
 #convert from BGR to RGB for plotting purposes
 def convertToRGB(img):
@@ -101,7 +108,9 @@ def estimate_color_quality(img):
     return contrast_score, saturation_score
 
 def estimate_composition_quality(img):
-
+    # create the facial landmark predictor
+    python_script_dir = os.path.dirname(os.path.realpath(__file__))
+    predictor = dlib.shape_predictor(os.path.join(python_script_dir, 'shape_predictor_68_face_landmarks.dat'))
     def estimate_lines(img):
         img = Image.fromarray(img)  # convert to PIL image format
         # Run Hough transform to find lines in image, compute average angle and spread
@@ -155,37 +164,28 @@ def estimate_composition_quality(img):
 
 
 #must have gray image as input
-def face_detector(img):
-
-    # initialize dlib's face detector (HOG-based)
-    detector = dlib.get_frontal_face_detector()
-
+def face_detection(img):
     # detect faces in the grayscale image
-    faces = detector(img, 1)
+    faces = face_detector(img, 1)
     if len(faces) < 1:
         for angle in np.arange(90, 360, 90):
             print("rot angle: ", angle)
             rotated = imutils.rotate_bound(img, angle)
-            faces = detector(rotated, 1)
+            faces = face_detector(rotated, 1)
             if len(faces) > 0:
                 return faces, angle, rotated
 
     return faces, 0, img
 
 #gray image as input!!!
-def face_landmarks_detector(img, faces, im_name):
-
-    # create the facial landmark predictor
-    python_script_dir = os.path.dirname(os.path.realpath(__file__))
-    predictor = dlib.shape_predictor(os.path.join(python_script_dir, 'shape_predictor_68_face_landmarks.dat'))
-
+def face_landmarks_detection(img, faces, im_name):
     face_landmarks = []
 
     for (i,rect) in enumerate(faces):
         # determine the facial landmarks for the face region, then
         # convert the facial landmark (x, y)-coordinates to a NumPy
         # array
-        shape = predictor(img, rect)
+        shape = face_features_predictor(img, rect)
         shape = face_utils.shape_to_np(shape)
 
         face_landmarks.append(shape)
@@ -342,6 +342,76 @@ def debug_list_list_str(x):
     return debug_str
 
 
+def img_list_to_features(im_paths, debug_output=None):
+    table = []
+    for im_path in im_paths:
+        try:
+            print("Processing: %d/%d %s" % (len(table) + 1, len(im_paths), im_path))
+            image = cv2.imread(im_path)
+            assert image is not None
+
+            #convert to gray
+            gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+            sharpness, noise, motion_blur = estimate_general_quality(gray_img)
+            contrast, saturation = estimate_color_quality(image)
+            lines, symmetry = estimate_composition_quality(gray_img)
+
+            #face region detection
+            faces, angle, face_img = face_detection(gray_img)
+            number_of_faces = len(faces)
+
+            #EXTRACT FACE FEATURES
+
+            faces_sharpness_all = []
+            faces_noise_all = []
+            faces_motionb_all = []
+
+            for face in faces:
+                # extract face ROI
+                face_roi = get_face_roi(face_img, face)
+                face_sharp, face_noise, face_motion_blur = estimate_general_quality(face_roi)
+
+                faces_sharpness_all.append(face_sharp)
+                faces_noise_all.append(face_noise)
+                faces_motionb_all.append(face_motion_blur)
+
+            face_landmarks = face_landmarks_detection(face_img, faces, im_path)
+            eye_ear_list = eye_ear(face_landmarks)
+
+            im_set = os.path.split(os.path.dirname(im_path))[-1]
+            im_path_csv = os.path.join(im_set, os.path.basename(im_path))
+            table_entry = [im_path_csv, im_set, sharpness, noise, motion_blur, contrast, saturation, lines, symmetry, faces, number_of_faces, faces_sharpness_all, faces_noise_all, faces_motionb_all, eye_ear_list]
+            table.append(table_entry)
+
+            if debug_output is not None:
+                debug_str = []
+                debug_str.append("shr: %.1f" % sharpness)
+                debug_str.append("nse: %.1f" % noise)
+                debug_str.append("mblr: %.1f" % motion_blur)
+                debug_str.append("cnt: %s" % debug_list_str(contrast))
+                debug_str.append("str: %.1f" % saturation)
+                debug_str.append("ln: %s" % debug_list_str(lines))
+                debug_str.append("sym: %s" % debug_list_str(symmetry))
+                debug_str.append("nfac: %.1f" % number_of_faces)
+                debug_str.append("fshr: %s" % debug_list_str(faces_sharpness_all))
+                debug_str.append("fmblr: %s" % debug_list_str(faces_motionb_all))
+                debug_str.append("cleye: %s" % debug_list_list_str(eye_ear_list))
+                debug_image(image, angle, faces, face_landmarks, debug_str, im_path_csv, debug_output)
+
+        except KeyboardInterrupt:
+            exit(-1)
+
+        except:
+            print("Failed to process: ", im_path)
+            traceback.print_exc()
+            print # -*- coding: utf-8 -*-
+
+    df_output = pd.DataFrame(table, columns = ['im_path', 'set_name', 'sharpness', 'noise', 'motion_blur', 'contrast', 'saturation', 'lines', 'symmetry', 'faces', 'number_of_faces', 'faces_sharp_all', 'faces_noise_all',
+                   'faces_motion_blur_all', 'eye_ear_list'])
+    return df_output
+
+
 if __name__ == "__main__":
     args = parse_args()
 
@@ -365,72 +435,5 @@ if __name__ == "__main__":
     get_path_recursive(args.im_path, file_extensions, im_paths)
     im_paths = sorted(im_paths)
 
-    df = pd.DataFrame(im_paths, columns=['file_name'])
-
-    table = []
-    for im_path in im_paths:
-        try:
-            print("Processing: %d/%d %s" % (len(table) + 1, len(im_paths), im_path))
-            image = cv2.imread(im_path)
-            assert image is not None
-
-            #convert to gray
-            gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-            sharpness, noise, motion_blur = estimate_general_quality(gray_img)
-            contrast, saturation = estimate_color_quality(image)
-            lines, symmetry = estimate_composition_quality(gray_img)
-
-            #face region detection
-            faces, angle, face_img = face_detector(gray_img)
-            number_of_faces = len(faces)
-
-            #EXTRACT FACE FEATURES
-
-            faces_sharpness_all = []
-            faces_noise_all = []
-            faces_motionb_all = []
-
-            for face in faces:
-                # extract face ROI
-                face_roi = get_face_roi(face_img, face)
-                face_sharp, face_noise, face_motion_blur = estimate_general_quality(face_roi)
-
-                faces_sharpness_all.append(face_sharp)
-                faces_noise_all.append(face_noise)
-                faces_motionb_all.append(face_motion_blur)
-
-            face_landmarks = face_landmarks_detector(face_img, faces, im_path)
-            eye_ear_list = eye_ear(face_landmarks)
-
-            im_set = os.path.split(os.path.dirname(im_path))[-1]
-            im_path_csv = os.path.join(im_set, os.path.basename(im_path))
-            table_entry = [im_path_csv, im_set, sharpness, noise, motion_blur, contrast, saturation, lines, symmetry, faces, number_of_faces, faces_sharpness_all, faces_noise_all, faces_motionb_all, eye_ear_list]
-            table.append(table_entry)
-
-            debug_str = []
-            debug_str.append("shr: %.1f" % sharpness)
-            debug_str.append("nse: %.1f" % noise)
-            debug_str.append("mblr: %.1f" % motion_blur)
-            debug_str.append("cnt: %s" % debug_list_str(contrast))
-            debug_str.append("str: %.1f" % saturation)
-            debug_str.append("ln: %s" % debug_list_str(lines))
-            debug_str.append("sym: %s" % debug_list_str(symmetry))
-            debug_str.append("nfac: %.1f" % number_of_faces)
-            debug_str.append("fshr: %s" % debug_list_str(faces_sharpness_all))
-            debug_str.append("fmblr: %s" % debug_list_str(faces_motionb_all))
-            debug_str.append("cleye: %s" % debug_list_list_str(eye_ear_list))
-            debug_image(image, angle, faces, face_landmarks, debug_str, im_path_csv, args.debug_output)
-
-        except KeyboardInterrupt:
-            exit(-1)
-
-        except:
-            print("Failed to process: ", im_path)
-            traceback.print_exc()
-            print # -*- coding: utf-8 -*-
-
-    df_output = pd.DataFrame(table, columns = ['im_path', 'set_name', 'sharpness', 'noise', 'motion_blur', 'contrast', 'saturation', 'lines', 'symmetry', 'faces', 'number_of_faces', 'faces_sharp_all', 'faces_noise_all',
-                   'faces_motion_blur_all', 'eye_ear_list'])
-
+    df_output = img_list_to_features(im_paths, args.debug_output)
     df_output.to_csv(os.path.join(args.output))

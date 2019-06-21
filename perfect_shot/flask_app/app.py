@@ -18,39 +18,48 @@ from flask import Flask, redirect, url_for, request, render_template, jsonify
 from werkzeug.utils import secure_filename
 from gevent.pywsgi import WSGIServer
 
+#
+# Import modules from parent folder
+#
+import inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0,parentdir)
+
+import ranker
+import feature_extraction
+
+MODEL_PATH = "../ranker_out/dataset/global_faces_m_ec/model.pickle"
+
 # Define a flask app
 app = Flask(__name__)
-
-# # Model saved with Keras model.save()
-# MODEL_PATH = "models/AlexNetModel.hdf5"
-#
-# # Load your trained model
-# model = load_model(MODEL_PATH)
+# Load trained model
+model = ranker.load_model(MODEL_PATH)
 # model._make_predict_function()  # Necessary
 print('Model loaded. Check http://127.0.0.1:5000/')
 
-def model_predict(img_path, model):
+def model_predict(img_paths, model):
     print("PREDICTION")
-    # img = image.load_img(img_path, target_size=(224, 224))
-    #
-    # # Preprocessing the image
-    # x = image.img_to_array(img)
-    # x = np.expand_dims(x, axis=0)
-    # x = x/255
-    #
-    # predictions = model.predict(x)
-    # pred_5 = np.argsort(predictions)[0][-3:]
-    # top_5 = {}
-    # labels_dict = {'Apple Scab': 0, 'Apple Black rot': 1, 'Apple Cedar rust': 2, 'Apple healthy': 3, 'Blueberry healthy': 4, 'Cherry(Sour) Mildew': 5, 'Cherry(Sour) healthy': 6, 'Corn Leaf spot': 7, 'Corn Common rust': 8, 'Corn Northern Leaf Blight': 9, 'Corn healthy': 10, 'Grape Black rot': 11, 'Grape Black measles': 12, 'Grape Leaf Blight': 13, 'Grape healthy': 14, 'Citrus greening': 15, 'Peach Bacterial spot': 16, 'Peach healthy': 17, 'Bell_Pepper Bacterial spot': 18, 'Bell_Pepper healthy': 19, 'Potato Early Blight': 20, 'Potato Late Blight': 21, 'Potato healthy': 22, 'Raspberry healthy': 23, 'Soybean healthy': 24, 'Squash Powdery mildew': 25, 'Strawberry Leaf scorch': 26, 'Strawberry healthy': 27, 'Tomato Bacterial spot': 28, 'Tomato Early blight': 29, 'Tomato Late blight': 30, 'Tomato Leaf Mold': 31, 'Tomato Septoria leaf spot': 32, 'Tomato Two-spotted spider mite': 33, 'Tomato Target Spot': 34, 'Tomato Yellow Leaf Curl Virus': 35, 'Tomato mosaic virus': 36, 'Tomato healthy': 37}
-    # for i in pred_5:
-    #     rank = predictions[0][i]
-    #     for kee, val in labels_dict.items():
-    #         if i == val:
-    #             top_5[kee] = round(rank * 100, 3)
-    #
-    # sorted_x2 = sorted(top_5.items(), key=operator.itemgetter(1), reverse=True)
-    # print(sorted_x2)
-    return [('Strawberry Leaf scorch', 48.45), ('Grape Leaf Blight', 45.429), ('Tomato Early blight', 5.23)]
+    print(img_paths)
+    feat_df = feature_extraction.img_list_to_features(img_paths, debug_output=None)
+    dataset = ranker.create_set(feat_df, model['args'])
+    ranker.ImageSample.clf = model['classifier']
+    ranker.ImageSample.scaler = model['scaler']
+    sorted_dataset = sorted(dataset, reverse=True)
+
+    print(sorted_dataset)
+
+    sorted_ids = []
+    for i in range(0, len(sorted_dataset)):
+        im_sample = sorted_dataset[i]
+        print("%d\t%s" % (i, im_sample.im_path))
+        sorted_ids.append(img_paths.index(im_sample.im_path))
+
+    print()
+    for id in sorted_ids:
+        print("%d\t%s" % (id, img_paths[id]))
+
+    return sorted_ids
 
 
 @app.route('/', methods=['GET'])
@@ -71,7 +80,7 @@ def upload():
             f.save(file_path)
             file_paths.append(file_path)
 
-        model = None
+        #model = None
         result = model_predict(file_paths, model)
 
         # result2 = dict(result)
@@ -91,7 +100,7 @@ def upload():
 
         # Prediction + Description
         #return jsonify({'payload':json.dumps([{'name':kee, 'val':val} for kee, val in result.items()])})
-        return jsonify({'payload':json.dumps([1, 2])})
+        return jsonify({'payload':json.dumps(result)})
 
     return None
 

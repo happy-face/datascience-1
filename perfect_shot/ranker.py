@@ -40,7 +40,7 @@ def parse_args():
 #
 # Converts one row of feature.csv table into feature vector
 #
-def row_to_feature_vector(dataFrame, row_id):
+def row_to_feature_vector(dataFrame, row_id, args):
     # sharpness
     # noise
     # motion_blur
@@ -114,14 +114,17 @@ def row_to_feature_vector(dataFrame, row_id):
     return fv
 
 #serialization of the model
-def store_model(path, image_featurizer, classifier, image2label_and_set):
-
-    model = {"featurizer": image_featurizer}
-    model["featurizer"] = model
+def store_model(path, classifier, scaler, args):
+    model = {}
     model["classifier"] = classifier
-    model["image2label_and_set"] = image2label_and_set
+    model["scaler"] = scaler
+    model["args"] = args
     with open(path, 'wb') as file:
         pickle.dump(model, file)
+
+def load_model(path):
+    with open(path, 'rb') as file:
+        return pickle.load(file)
 
 
 def both_eyes_closed(eye_ear_list, threshold):
@@ -193,7 +196,7 @@ class ImageSample:
 #
 # Creates collections of ImageSamples for each unique set
 #
-def create_sets(feat_df, img2label_and_set):
+def create_sets(feat_df, img2label_and_set, args):
     set_name2image_samples = {}
     for row_id in range(0, len(feat_df.im_path)):
         im_path = feat_df.im_path[row_id]
@@ -202,13 +205,25 @@ def create_sets(feat_df, img2label_and_set):
             continue
         label, set_name = img2label_and_set[im_path]
 
-        X = row_to_feature_vector(feat_df, row_id)
+        X = row_to_feature_vector(feat_df, row_id, args)
 
         if not set_name in set_name2image_samples:
             set_name2image_samples[set_name] = []
         set_name2image_samples[set_name].append(ImageSample(X, label, im_path))
 
     return set_name2image_samples
+
+
+#
+# Creates collections of ImageSamples for each unique set
+#
+def create_set(feat_df, args):
+    dataset = []
+    for row_id in range(0, len(feat_df.im_path)):
+        im_path = feat_df.im_path[row_id]
+        X = row_to_feature_vector(feat_df, row_id, args)
+        dataset.append(ImageSample(X, None, im_path))
+    return dataset
 
 
 #
@@ -361,7 +376,7 @@ if __name__ == "__main__":
         string_cols = ['contrast', 'lines', 'symmetry', 'faces_sharp_all', 'faces_noise_all', 'faces_motion_blur_all', 'eye_ear_list']
         feat_df[string_cols] = feat_df[string_cols].applymap(lambda s: literal_eval(s))
 
-        set_name2image_samples = create_sets(feat_df, img2label_and_set)
+        set_name2image_samples = create_sets(feat_df, img2label_and_set, args)
         filter_dummy(set_name2image_samples)
         print_sets(set_name2image_samples)
 
@@ -415,7 +430,7 @@ if __name__ == "__main__":
 
         # store current model
         model_path = os.path.join(args.output, "model.pickle")
-        store_model(model_path, set_image_sample_items, clf, img2label_and_set)
+        store_model(model_path, clf, scaler, args)
 
         # set reference to classifier so that we can use comparison methods on ImageSample
         ImageSample.clf = clf
