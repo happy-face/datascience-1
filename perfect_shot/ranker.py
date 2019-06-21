@@ -15,6 +15,7 @@ from sys import stdout
 import shutil
 import pickle
 from ast import literal_eval
+import rank_metrics
 
 from sklearn.preprocessing import StandardScaler
 
@@ -313,6 +314,16 @@ def score_top_1(set2sorted):
     return float(correct) / len(set2sorted)
 
 
+def score_ndcg(set2sorted):
+    ndcg = []
+    for set_name, image_samples in set2sorted.items():
+        r = []
+        for image_sample in image_samples:
+            r.append(image_sample.y)
+        ndcg.append(rank_metrics.ndcg_at_k(r, len(r)))
+    return sum(ndcg) / len(ndcg)
+
+
 def write_ranker_output_file(file_path, set2sorted):
     # write ranked sets to output input_folder
     with open(file_path, 'w') as out_file:
@@ -456,6 +467,13 @@ if __name__ == "__main__":
         output_file.write("\n\n")
         output_file.write("train top1: %.2f%%\n" % (100 * score_top_1(set2sorted_train)))
         output_file.write("test top1: %.2f%%\n" % (100 * score_top_1(set2sorted_test)))
+
+        stdout.write("\n\n")
+        stdout.write("train ndcg: %.2f%%\n" % (100 * score_ndcg(set2sorted_train)))
+        stdout.write("test ndcg: %.2f%%\n" % (100 * score_ndcg(set2sorted_test)))
+        output_file.write("\n\n")
+        output_file.write("train ndcg: %.2f%%\n" % (100 * score_ndcg(set2sorted_train)))
+        output_file.write("test ndcg: %.2f%%\n" % (100 * score_ndcg(set2sorted_test)))
 
         # collect correct / incorrect classification pairs
         if args.debug_images:

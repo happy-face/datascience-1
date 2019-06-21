@@ -6,3 +6,7 @@ test accuracy: 69.77%
 
 train top1: 66.88%
 test top1: 57.58%
+
+
+train ndcg: 93.17%
+test ndcg: 94.25%
