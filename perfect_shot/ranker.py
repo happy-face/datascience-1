@@ -14,6 +14,7 @@ import pandas as pd
 from sys import stdout
 import shutil
 import pickle
+from ast import literal_eval
 
 from sklearn.preprocessing import StandardScaler
 
@@ -47,24 +48,44 @@ def store_model(path, image_featurizer, classifier, image2label_and_set):
         pickle.dump(model, file)
 
 
-#convert string parameters into lists of numerical data
-def string2list(in_str):
-    in_str = in_str[in_str.find("[") + 1:in_str.find("]")]
-    out_list = [float(s) for s in in_str.split(',')]
-    return out_list
+def open_closed_eyes(eyes_ear_list, eye_ar_thresh):
 
-def eyes_string2list(in_str):
-    strs = in_str.replace('[', '').split('],')
-    out_list = [list(map(int, s.replace(']', '').split(','))) for s in strs]
-    return out_list
+    closed_eyes_in_image = []
+    if eyes_ear_list:
+        for eye_ear in eyes_ear_list:
+            closed_eye = []
 
-def both_eyes_closed(eyes):
-    eye_list = eyes_string2list(eyes)
+            if eye_ear[0] > eye_ar_thresh:
+                eye_closed = 0
+            else:
+                eye_closed = 1
+
+            closed_eye.append(eye_closed)
+
+            if eye_ear[1] > eye_ar_thresh:
+                eye_closed = 0
+            else:
+                eye_closed = 1
+
+            closed_eye.append(eye_closed)
+            closed_eyes_in_image.append(closed_eye)
+
+    else:
+        closed_eyes_in_image = 0
+
+    return closed_eyes_in_image
+
+
+def both_eyes_closed(eye_list):
     closed = [1 for eye in eye_list if (eye == [1, 1])]
     return np.sum(closed)
 
 def eyes_faces_ratio(eyes,faces):
-    return len(eyes)/faces
+    open_eyes = []
+    for eye in eyes:
+        open_eyes.append(eye.count(0))
+    return np.sum(open_eyes)/faces
+
 #
 # Converts one row of feature.csv table into feature vector
 #
@@ -91,30 +112,32 @@ def row_to_feature_vector(dataFrame, row_id):
         fv.append(dataFrame.motion_blur[row_id])
     if args.color_image_quality:
         print("Using color image quality features")
-        fv.extend(string2list(dataFrame.contrast[row_id]))
+        fv.extend(dataFrame.contrast[row_id])
         fv.append(dataFrame.saturation[row_id])
 
     if args.content_image_quality:
         print("Using content image quality features")
-        fv.extend(string2list(dataFrame.lines[row_id]))
-        fv.extend(string2list(dataFrame.symmetry[row_id]))
+        fv.extend(dataFrame.lines[row_id])
+        fv.extend(dataFrame.symmetry[row_id])
 
     if args.face_features_quality:
         print("Using face quality features")
         fv.append(dataFrame.number_of_faces[row_id])
         if (dataFrame.number_of_faces[row_id] > 0):
-            fv.append(np.mean(string2list(dataFrame.faces_sharp_all[row_id])))
-            fv.append(np.min(string2list(dataFrame.faces_sharp_all[row_id])))
-            fv.append(np.max(string2list(dataFrame.faces_sharp_all[row_id])))
+            fv.append(np.mean(dataFrame.faces_sharp_all[row_id]))
+            fv.append(np.min(dataFrame.faces_sharp_all[row_id]))
+            fv.append(np.max(dataFrame.faces_sharp_all[row_id]))
         else:
             fv.extend([0, 0, 0])
         #number of faces with both eyes closed
-        if (dataFrame.closed_eyes[row_id] != '[]'):
-            fv.append(both_eyes_closed(dataFrame.closed_eyes[row_id]))
+        if (dataFrame.eye_ear_list[row_id]):
+            fv.append(np.mean(dataFrame.eye_ear_list[row_id]))
+            fv.append(np.min(dataFrame.eye_ear_list[row_id]))
+            fv.append(np.max(dataFrame.eye_ear_list[row_id]))
         else:
             fv.append(0)
-        if (dataFrame.closed_eyes[row_id] != '[]' and dataFrame.number_of_faces[row_id] != 0):
-            fv.append(eyes_faces_ratio(dataFrame.closed_eyes[row_id],dataFrame.number_of_faces[row_id]))
+        if (dataFrame.thresh_01[row_id] != 0 and dataFrame.number_of_faces[row_id] != 0):
+            fv.append(eyes_faces_ratio(dataFrame.thresh_01[row_id],dataFrame.number_of_faces[row_id]))
         else:
             fv.append(0)
 
@@ -336,6 +359,23 @@ if __name__ == "__main__":
 
         # featurize
         feat_df = pd.read_csv(args.input)
+
+        #convert string columns to lists
+        string_cols = ['contrast', 'lines', 'symmetry', 'faces_sharp_all', 'faces_noise_all', 'faces_motion_blur_all', 'eye_ear_list']
+        feat_df[string_cols] = feat_df[string_cols].applymap(lambda s: literal_eval(s))
+
+
+        #add eye thresholding data to dataFrame (thresh = [0.1, 0.2, 0.3, 0.4]
+
+        thresholds = [0.1, 0.2, 0.3, 0.4]
+
+        feat_df['thresh_01'] = feat_df['eye_ear_list'].apply(lambda x: open_closed_eyes(x, 0.1))
+        feat_df['thresh_02'] = feat_df['eye_ear_list'].apply(lambda x: open_closed_eyes(x, 0.2))
+        feat_df['thresh_03'] = feat_df['eye_ear_list'].apply(lambda x: open_closed_eyes(x, 0.3))
+        feat_df['thresh_04'] = feat_df['eye_ear_list'].apply(lambda x: open_closed_eyes(x, 0.4))
+
+
+
         set_name2image_samples = create_sets(feat_df, img2label_and_set)
         filter_dummy(set_name2image_samples)
         print_sets(set_name2image_samples)
