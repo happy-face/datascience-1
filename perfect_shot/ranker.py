@@ -26,65 +26,16 @@ def parse_args():
     parser.add_argument("-i", "--input", required=True, help="Input CSV dataset file")
     parser.add_argument("-l", "--labels", required=True, help = "Input CSV labels file")
     parser.add_argument("-o", "--output", required=True, help="Output folder")
-    parser.add_argument("-giq", "--global-image-quality", action="store_true", help="Use global image quality features")
-    parser.add_argument("-ciq", "--color-image-quality", action="store_true", help="Use color image quality features")
-    parser.add_argument("-coniq", "--content-image-quality", action="store_true", help="Use content image quality features")
-    parser.add_argument("-fiq", "--face-features-quality", action="store_true", help="Use face quality features")
+    parser.add_argument("-giq", "--global-image-quality", default="snm", help="Global features: [s]harpness, [n]oise, [m]otion blur")
+    parser.add_argument("-ciq", "--color-image-quality", default="cs", help="Use color image quality features: [c]ontrast, [s]aturation")
+    parser.add_argument("-coniq", "--content-image-quality", default="ls", help="Use content image quality features: [l]ines, [s]ymmetry")
+    parser.add_argument("-fiq", "--face-features-quality", default="cseob", help="Use face quality features: [c]ount, [s]harpness, [e]ar, [o]pen eyes ratio, [b]oth eyes closed")
     parser.add_argument("-svm", "--support-vector-machine", action="store_true", help="Use support vector machine classifier")
     parser.add_argument("-rfc", "--random-forest-classifier", action="store_true", help="Use random forest classifier")
     parser.add_argument("-di", "--debug-images", required=False, help="Debug images")
     parser.add_argument("--force", action="store_true", help="Overwrites output folder if it already exists")
     return parser.parse_args()
 
-
-#serialization of the model
-def store_model(path, image_featurizer, classifier, image2label_and_set):
-
-    model = {"featurizer": image_featurizer}
-    model["featurizer"] = model
-    model["classifier"] = classifier
-    model["image2label_and_set"] = image2label_and_set
-    with open(path, 'wb') as file:
-        pickle.dump(model, file)
-
-
-def open_closed_eyes(eyes_ear_list, eye_ar_thresh):
-
-    closed_eyes_in_image = []
-    if eyes_ear_list:
-        for eye_ear in eyes_ear_list:
-            closed_eye = []
-
-            if eye_ear[0] > eye_ar_thresh:
-                eye_closed = 0
-            else:
-                eye_closed = 1
-
-            closed_eye.append(eye_closed)
-
-            if eye_ear[1] > eye_ar_thresh:
-                eye_closed = 0
-            else:
-                eye_closed = 1
-
-            closed_eye.append(eye_closed)
-            closed_eyes_in_image.append(closed_eye)
-
-    else:
-        closed_eyes_in_image = 0
-
-    return closed_eyes_in_image
-
-
-def both_eyes_closed(eye_list):
-    closed = [1 for eye in eye_list if (eye == [1, 1])]
-    return np.sum(closed)
-
-def eyes_faces_ratio(eyes,faces):
-    open_eyes = []
-    for eye in eyes:
-        open_eyes.append(eye.count(0))
-    return np.sum(open_eyes)/faces
 
 #
 # Converts one row of feature.csv table into feature vector
@@ -105,43 +56,89 @@ def row_to_feature_vector(dataFrame, row_id):
     # closed_eyes
     fv = []
 
-    if args.global_image_quality:
-        print("Using global image quality features")
+    if 's' in args.global_image_quality:
         fv.append(dataFrame.sharpness[row_id])
+    if 'n' in args.global_image_quality:
         fv.append(dataFrame.noise[row_id])
+    if 'm' in args.global_image_quality:
         fv.append(dataFrame.motion_blur[row_id])
-    if args.color_image_quality:
-        print("Using color image quality features")
+
+    if 'c' in args.color_image_quality:
         fv.extend(dataFrame.contrast[row_id])
+    if 's' in args.color_image_quality:
         fv.append(dataFrame.saturation[row_id])
 
-    if args.content_image_quality:
-        print("Using content image quality features")
+    if 'l' in args.content_image_quality:
         fv.extend(dataFrame.lines[row_id])
+    if 's' in args.content_image_quality:
         fv.extend(dataFrame.symmetry[row_id])
 
-    if args.face_features_quality:
-        print("Using face quality features")
+    if 'c' in args.face_features_quality:
         fv.append(dataFrame.number_of_faces[row_id])
+
+    if 's' in args.face_features_quality:
         if (dataFrame.number_of_faces[row_id] > 0):
             fv.append(np.mean(dataFrame.faces_sharp_all[row_id]))
             fv.append(np.min(dataFrame.faces_sharp_all[row_id]))
             fv.append(np.max(dataFrame.faces_sharp_all[row_id]))
         else:
             fv.extend([0, 0, 0])
-        #number of faces with both eyes closed
+
+    if 'e' in args.face_features_quality:
         if (dataFrame.eye_ear_list[row_id]):
             fv.append(np.mean(dataFrame.eye_ear_list[row_id]))
             fv.append(np.min(dataFrame.eye_ear_list[row_id]))
             fv.append(np.max(dataFrame.eye_ear_list[row_id]))
         else:
-            fv.append(0)
-        if (dataFrame.thresh_01[row_id] != 0 and dataFrame.number_of_faces[row_id] != 0):
-            fv.append(eyes_faces_ratio(dataFrame.thresh_01[row_id],dataFrame.number_of_faces[row_id]))
+            fv.extend([0, 0, 0])
+
+    if 'o' in args.face_features_quality:
+        if (len(dataFrame.eye_ear_list[row_id]) > 0 and dataFrame.number_of_faces[row_id] > 0):
+            fv.append(eyes_faces_ratio(dataFrame.eye_ear_list[row_id], dataFrame.number_of_faces[row_id], 0.1))
+            fv.append(eyes_faces_ratio(dataFrame.eye_ear_list[row_id], dataFrame.number_of_faces[row_id], 0.2))
+            fv.append(eyes_faces_ratio(dataFrame.eye_ear_list[row_id], dataFrame.number_of_faces[row_id], 0.3))
+            fv.append(eyes_faces_ratio(dataFrame.eye_ear_list[row_id], dataFrame.number_of_faces[row_id], 0.4))
+
         else:
-            fv.append(0)
+            fv.extend([0, 0, 0, 0])
+
+    if 'b' in args.face_features_quality:
+        if len(dataFrame.eye_ear_list[row_id]) > 0:
+            fv.append(both_eyes_closed(dataFrame.eye_ear_list[row_id], 0.1))
+            fv.append(both_eyes_closed(dataFrame.eye_ear_list[row_id], 0.2))
+            fv.append(both_eyes_closed(dataFrame.eye_ear_list[row_id], 0.3))
+            fv.append(both_eyes_closed(dataFrame.eye_ear_list[row_id], 0.4))
+        else:
+            fv.extend([0, 0, 0, 0])
 
     return fv
+
+#serialization of the model
+def store_model(path, image_featurizer, classifier, image2label_and_set):
+
+    model = {"featurizer": image_featurizer}
+    model["featurizer"] = model
+    model["classifier"] = classifier
+    model["image2label_and_set"] = image2label_and_set
+    with open(path, 'wb') as file:
+        pickle.dump(model, file)
+
+
+def both_eyes_closed(eye_ear_list, threshold):
+    for left_eye_ear, right_eye_ear in eye_ear_list:
+        if left_eye_ear < threshold and right_eye_ear < threshold:
+            return 1
+    return 0
+
+
+def eyes_faces_ratio(eye_ear_list, faces_count, threshold):
+    open_eye_count = 0
+    for left_eye_ear, right_eye_ear in eye_ear_list:
+        if left_eye_ear > threshold:
+            open_eye_count += 1
+        if right_eye_ear > threshold:
+            open_eye_count += 1
+    return open_eye_count / faces_count
 
 #
 # Reads labels CSV into dictonary mapping im_path to (label, set) pair
@@ -364,18 +361,6 @@ if __name__ == "__main__":
         string_cols = ['contrast', 'lines', 'symmetry', 'faces_sharp_all', 'faces_noise_all', 'faces_motion_blur_all', 'eye_ear_list']
         feat_df[string_cols] = feat_df[string_cols].applymap(lambda s: literal_eval(s))
 
-
-        #add eye thresholding data to dataFrame (thresh = [0.1, 0.2, 0.3, 0.4]
-
-        thresholds = [0.1, 0.2, 0.3, 0.4]
-
-        feat_df['thresh_01'] = feat_df['eye_ear_list'].apply(lambda x: open_closed_eyes(x, 0.1))
-        feat_df['thresh_02'] = feat_df['eye_ear_list'].apply(lambda x: open_closed_eyes(x, 0.2))
-        feat_df['thresh_03'] = feat_df['eye_ear_list'].apply(lambda x: open_closed_eyes(x, 0.3))
-        feat_df['thresh_04'] = feat_df['eye_ear_list'].apply(lambda x: open_closed_eyes(x, 0.4))
-
-
-
         set_name2image_samples = create_sets(feat_df, img2label_and_set)
         filter_dummy(set_name2image_samples)
         print_sets(set_name2image_samples)
@@ -396,7 +381,10 @@ if __name__ == "__main__":
 
         if args.support_vector_machine:
             clf = svm.SVC(verbose=True)
-            parameters = { 'kernel': ('linear', 'rbf'), 'C': [100.0, 10.0, 1.0, 0.1] }
+            parameters = {
+            'kernel': ('linear', 'rbf'),
+            'C': [100.0, 10.0, 1.0, 0.1]
+            }
 
             # iid = True : use average across folds as selection criteria
             # refit = True : fit model on all data after getting best parameters with CV

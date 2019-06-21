@@ -1,0 +1,8 @@
+Namespace(color_image_quality='', content_image_quality='', debug_images=None, face_features_quality='es', force=True, global_image_quality='m', input='/home/kornjacinvrac/git/datascience/perfect_shot/dataset/dataset_feat.csv', labels='/home/kornjacinvrac/git/datascience/perfect_shot/dataset/dataset_labels.csv', output='ranker_out/dataset/global_faces_m_es', random_forest_classifier=False, support_vector_machine=True)
+
+train accuracy: 85.06%
+test accuracy: 63.95%
+
+
+train top1: 82.47%
+test top1: 53.03%
