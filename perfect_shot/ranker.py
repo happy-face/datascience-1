@@ -320,7 +320,8 @@ def score_ndcg(set2sorted):
         r = []
         for image_sample in image_samples:
             r.append(image_sample.y)
-        ndcg.append(rank_metrics.ndcg_at_k(r, len(r)))
+        not_relevant_count = r.count(0)
+        ndcg.append(rank_metrics.ndcg_at_k(r, not_relevant_count))
     return sum(ndcg) / len(ndcg)
 
 
@@ -409,7 +410,7 @@ if __name__ == "__main__":
             clf = svm.SVC(verbose=True)
             parameters = {
             'kernel': ('linear', 'rbf'),
-            'C': [100.0, 10.0, 1.0, 0.1]
+            'C': [100.0, 10.0, 1.0, 0.1, 0.01, 0.001]
             }
 
             # iid = True : use average across folds as selection criteria

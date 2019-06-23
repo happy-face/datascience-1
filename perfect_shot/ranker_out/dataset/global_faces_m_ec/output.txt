@@ -8,5 +8,5 @@ train top1: 66.88%
 test top1: 57.58%
 
 
-train ndcg: 93.17%
-test ndcg: 94.25%
+train ndcg: 77.96%
+test ndcg: 73.70%
