@@ -388,7 +388,7 @@ def debug_list_list_str(x):
     return debug_str
 
 
-def img_list_to_features(im_paths, debug_output=None):
+def img_list_to_features(im_paths, face_predictor="hog", debug_output=None):
     table = []
     for im_path in im_paths:
         try:
@@ -404,11 +404,12 @@ def img_list_to_features(im_paths, debug_output=None):
             lines, symmetry = estimate_composition_quality(gray_img)
 
             #face region detection
-            if args.hog_face_predictor:
+            if face_predictor == "hog":
                 faces, angle, face_img = face_detection(gray_img)
-
-            if args.dnn_face_predictor:
+            elif face_predictor == "dnn":
                 faces, angle, face_img = face_detection_dnn(image)
+            else:
+                assert(False)
 
             number_of_faces = len(faces)
 
@@ -486,5 +487,12 @@ if __name__ == "__main__":
     get_path_recursive(args.im_path, file_extensions, im_paths)
     im_paths = sorted(im_paths)
 
-    df_output = img_list_to_features(im_paths, args.debug_output)
+    if args.hog_face_predictor:
+        face_predictor = "hog"
+    elif args.dnn_face_predictor:
+        face_predictor = "dnn"
+    else:
+        assert(False)
+
+    df_output = img_list_to_features(im_paths, face_predictor)
     df_output.to_csv(os.path.join(args.output))
