@@ -25,6 +25,8 @@ def parse_args():
     parser.add_argument("-ip", "--im-path", required=True, help="Path to folder with images")
     parser.add_argument("-do", "--debug-output", required=False, help="Path to output folder with debug immages")
     parser.add_argument("-o", "--output", required=True, help="Output CSV file")
+    parser.add_argument("-hfp", "--hog-face-predictor", action="store_true", help="Use hog (dlib) face predictor")
+    parser.add_argument("-dfp", "--dnn-face-predictor", action="store_true", help="Use dnn (opencv) face predictor")
     parser.add_argument("--force", action="store_true", help="Overwrites output CSV and debug output folder if it already exists")
     return parser.parse_args()
 
@@ -36,12 +38,16 @@ face_features_predictor = dlib.shape_predictor(os.path.join(python_script_dir, '
 # initialize dlib's face detector (HOG-based)
 face_detector = dlib.get_frontal_face_detector()
 
+#initialize OpenCV's dnn face detector
+dnn_prototxt = os.path.join(python_script_dir, 'deploy.prototxt.txt')
+dnn_model = os.path.join(python_script_dir, 'res10_300x300_ssd_iter_140000.caffemodel')
+dnn_face_detector = cv2.dnn.readNetFromCaffe(dnn_prototxt, dnn_model)
 
-#convert from BGR to RGB for plotting purposes
+# convert from BGR to RGB for plotting purposes
 def convertToRGB(img):
     return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-#input image MUST BE GRAYSCALE
+# input image MUST BE GRAYSCALE
 def estimate_general_quality(img):
 
     def estimate_sharpness(img):
@@ -176,6 +182,46 @@ def face_detection(img):
                 return faces, angle, rotated
 
     return faces, 0, img
+
+#must have gray image as input
+def face_detection_dnn(img):
+    # detect faces in the grayscale image
+    (h, w) = img.shape[:2]
+    blob = cv2.dnn.blobFromImage(cv2.resize(img, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
+    dnn_face_detector.setInput(blob)
+    detections = dnn_face_detector.forward()
+
+    faces = []
+    for i in range(0, detections.shape[2]):
+        confidence = detections[0, 0, i, 2]
+        if confidence > 0.60:
+            box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+            (startX, startY, endX, endY) = box.astype("int")
+            face = dlib.rectangle(left=startX, top=startY, right=endX, bottom=endY)
+            faces.append(face)
+
+    if len(faces) < 1:
+        for angle in np.arange(90, 360, 90):
+            print("rot angle: ", angle)
+            rotated = imutils.rotate_bound(img, angle)
+            (h, w) = rotated.shape[:2]
+            blob = cv2.dnn.blobFromImage(cv2.resize(rotated, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
+            dnn_face_detector.setInput(blob)
+            detections = dnn_face_detector.forward()
+
+            faces = []
+            for i in range(0, detections.shape[2]):
+                confidence = detections[0, 0, i, 2]
+                if confidence > 0.60:
+                    box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                    (startX, startY, endX, endY) = box.astype("int")
+                    face = dlib.rectangle(left=startX, top=startY, right=endX, bottom=endY)
+                    faces.append(face)
+            if len(faces) > 0:
+                return faces, angle, rotated
+
+    return faces, 0, img
+
 
 #gray image as input!!!
 def face_landmarks_detection(img, faces, im_name):
@@ -342,7 +388,7 @@ def debug_list_list_str(x):
     return debug_str
 
 
-def img_list_to_features(im_paths, debug_output=None):
+def img_list_to_features(im_paths, face_predictor="hog", debug_output=None):
     table = []
     for im_path in im_paths:
         try:
@@ -358,7 +404,13 @@ def img_list_to_features(im_paths, debug_output=None):
             lines, symmetry = estimate_composition_quality(gray_img)
 
             #face region detection
-            faces, angle, face_img = face_detection(gray_img)
+            if face_predictor == "hog":
+                faces, angle, face_img = face_detection(gray_img)
+            elif face_predictor == "dnn":
+                faces, angle, face_img = face_detection_dnn(image)
+            else:
+                assert(False)
+
             number_of_faces = len(faces)
 
             #EXTRACT FACE FEATURES
@@ -435,5 +487,12 @@ if __name__ == "__main__":
     get_path_recursive(args.im_path, file_extensions, im_paths)
     im_paths = sorted(im_paths)
 
-    df_output = img_list_to_features(im_paths, args.debug_output)
+    if args.hog_face_predictor:
+        face_predictor = "hog"
+    elif args.dnn_face_predictor:
+        face_predictor = "dnn"
+    else:
+        assert(False)
+
+    df_output = img_list_to_features(im_paths, face_predictor)
     df_output.to_csv(os.path.join(args.output))

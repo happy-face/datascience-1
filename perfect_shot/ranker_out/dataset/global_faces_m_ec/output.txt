@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 Namespace(color_image_quality='', content_image_quality='', debug_images='/home/julia/perfect_shoot_data/dataset_feat', face_features_quality='ec', force=True, global_image_quality='m', input='/home/julia/git/datascience/perfect_shot/dataset/dataset_feat.csv', labels='/home/julia/git/datascience/perfect_shot/dataset/dataset_labels.csv', output='ranker_out/dataset/global_faces_m_ec', random_forest_classifier=False, support_vector_machine=True)
+=======
+Namespace(color_image_quality='', content_image_quality='', debug_images='/home/julia/perfect_shoot_data/dataset_feat', face_features_quality='ec', force=True, global_image_quality='m', input='/home/julia/git/datascience2/perfect_shot/dataset/dataset_feat.csv', labels='/home/julia/git/datascience2/perfect_shot/dataset/dataset_labels.csv', output='ranker_out/dataset/global_faces_m_ec', random_forest_classifier=False, support_vector_machine=True)
+>>>>>>> 203d7b517169f65218bdcef45e6625a802079960
 
 train accuracy: 71.99%
 test accuracy: 69.77%
@@ -8,5 +12,5 @@ train top1: 66.88%
 test top1: 57.58%
 
 
-train ndcg: 93.17%
-test ndcg: 94.25%
+train ndcg: 77.96%
+test ndcg: 73.70%
