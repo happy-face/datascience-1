@@ -1,13 +1,15 @@
 {% extends "base.html" %} {% block content %}
 
-<!-- <h2><center>Disease Predictor</center></h2> -->
-<h2 style="color:rgb(102,178,255)"><center>Perfect Shot</center></h2>
+<!-- <h2><center>Perfect Shot</center></h2> -->
+<h2 style="color:rgb(255,0,0)"><center>Perfect Shot</center></h2>
+<h4><center><img src="/static/camera2_small.png"></center width="50" height="10"></h4>
 <h4><center>Select the best photo from a bunch you took</center></h4>
+
 
 <div>
     <form id="upload-file" method="post" enctype="multipart/form-data">
         <label for="imageUpload" class="upload-label">
-            Choose...
+            Upload images...
         </label>
         <input type="file" name="file" id="imageUpload" accept=".png, .jpg, .jpeg" multiple>
     </form>
@@ -23,7 +25,7 @@
     <div class="loader" style="clear:both;display:none;"></div>
 
     <div id="result" style="clear:both;">
-      <h2>Result</h2>
+      <h2>Best photo:</h2>
       <div id="resultContainer" class="img-preview"></div>
     </div>
 
