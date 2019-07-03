@@ -19,4 +19,5 @@ RUN pip3 install Flask numpy gevent pillow scipy matplotlib opencv-python scikit
 EXPOSE 5000
 
 # Run the app
-CMD [ "bash" , "scripts/flask_app.sh"]
+# CMD [ "bash" , "scripts/flask_app.sh"]
+CMD [ "python3" , "app.py"]
