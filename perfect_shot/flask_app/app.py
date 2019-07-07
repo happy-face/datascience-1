@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from __future__ import division, print_function
 # coding=utf-8
 import sys
@@ -7,6 +9,7 @@ import re
 import numpy as np
 import operator
 import json
+#import logging
 
 # # Keras
 # from keras.models import load_model
@@ -38,6 +41,14 @@ model = ranker.load_model(MODEL_PATH)
 # model._make_predict_function()  # Necessary
 print('Model loaded. Check http://127.0.0.1:5000/')
 
+
+def index_of_item_with_substring(strings_list, substring):
+    for i in range(0, len(strings_list)):
+        if substring in strings_list[i]:
+            return i
+    return -1
+
+
 def model_predict(img_paths, model):
     print("PREDICTION")
     print(img_paths)
@@ -50,10 +61,13 @@ def model_predict(img_paths, model):
     print(sorted_dataset)
 
     sorted_ids = []
+    print(img_paths)
     for i in range(0, len(sorted_dataset)):
         im_sample = sorted_dataset[i]
         print("%d\t%s" % (i, im_sample.im_path))
-        sorted_ids.append(img_paths.index(im_sample.im_path))
+        im_sample_index = index_of_item_with_substring(img_paths, os.path.basename(im_sample.im_path))
+        assert im_sample_index != -1
+        sorted_ids.append(im_sample_index)
 
     print()
     for id in sorted_ids:
@@ -65,12 +79,15 @@ def model_predict(img_paths, model):
 @app.route('/', methods=['GET'])
 def index():
     # Main page
+    print("=== APP ROUTE /")
     return render_template('index.html')
 
 
 @app.route('/predict', methods=['GET', 'POST'])
 def upload():
+    print("=== APP ROUTE PREDICT")
     if request.method == 'POST':
+        print("post")
         file_paths = []
         files_dict = request.files.to_dict(flat=False)
         for f in files_dict['file']:
@@ -80,32 +97,20 @@ def upload():
             f.save(file_path)
             file_paths.append(file_path)
 
-        #model = None
         result = model_predict(file_paths, model)
-
-        # result2 = dict(result)
-        # top_hit = list(result2.keys())[0]
-        # top_val = list(result2.values())[0]
-        # dis_file = "models/disease_description.csv"
-        # result_final = {}
-        # with open(dis_file, 'r') as fh_in:
-        #     for line in fh_in:
-        #         line = line.strip().split(",")
-        #         result_final[line[0]] = line[1]
-        # result = {}
-        # for kee, val in result_final.items():
-        #     if top_hit in kee:
-        #         new = top_hit + " - "+ str(top_val)
-        #         result[new] = val
-
-        # Prediction + Description
-        #return jsonify({'payload':json.dumps([{'name':kee, 'val':val} for kee, val in result.items()])})
         return jsonify({'payload':json.dumps(result)})
 
     return None
 
-if __name__ == '__main__':
 
+#@app.route('/', defaults={'path': ''})
+#@app.route('/<path:path>')
+#def catch_all(path):
+#    print('=== You want path: %s' % path)
+#    return '=== You want path: %s' % path
+
+
+if __name__ == '__main__':
     # Serve the app with gevent
     http_server = WSGIServer(('', 5000), app)
     http_server.serve_forever()

@@ -38,10 +38,6 @@ $(document).ready(function () {
                     width = height * (image.width / image.height)
                 }
 
-                console.log(image.width);
-                console.log(image.height);
-                console.log(width);
-                console.log(height);
                 $('#' + id).css('width', width.toString() + 'px');
                 $('#' + id).css('height', height.toString() + 'px');
             }
@@ -68,6 +64,7 @@ $(document).ready(function () {
 
     // Predict
     $('#btn-predict').click(function () {
+        console.log("btn-predict log");
         var form_data = new FormData($('#upload-file')[0]);
 
         // Show loading animation
@@ -104,6 +101,10 @@ $(document).ready(function () {
            //    $('#result').append(_html);
            // }
            console.log('Success!');
+          },
+         error: function(jqXHR, errorDesc, exp) {
+           console.log(errorDesc);
+           console.log(exp);
           },
         });
     });
